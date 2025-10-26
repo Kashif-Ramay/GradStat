@@ -4,6 +4,20 @@
 
 ---
 
+## 🚀 Quick Start (30 seconds)
+
+1. **Open:** https://gradstat-frontend.onrender.com
+2. **Enter password:** `GradStat2025!SecureTest`
+3. **Upload your data:** CSV or Excel file
+4. **Click "Validate & Preview Data"**
+5. **Select analysis type** from dropdown
+6. **Click "Run Analysis"**
+7. **Download report** when complete! 📥
+
+**Note:** First load takes ~30 seconds (services waking up). Subsequent loads are fast!
+
+---
+
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
@@ -23,12 +37,26 @@
 
 ### First Time Setup
 
-1. **Open GradStat** at `http://localhost:3000`
-2. **Familiarize yourself** with the interface:
+1. **Open GradStat** at:
+   - **Live (Testing):** https://gradstat-frontend.onrender.com
+   - **Local Development:** `http://localhost:3000`
+
+2. **Enter Password** (for testing deployment):
+   - Password: `GradStat2025!SecureTest`
+   - Contact administrator if you don't have access
+
+3. **Familiarize yourself** with the interface:
    - **Header**: Navigation and mode switching
    - **Upload Area**: Drag-and-drop or click to upload
    - **Analysis Selector**: Choose your analysis type
    - **Results Area**: View outputs and visualizations
+
+### ⚠️ Testing Environment Notes
+
+- **First load takes ~30 seconds** (services wake up from sleep)
+- **10 analyses per hour limit** (prevents abuse)
+- **Files auto-delete after 24 hours** (no persistent storage)
+- **Download reports immediately** after analysis
 
 ### Interface Overview
 
