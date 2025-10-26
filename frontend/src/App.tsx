@@ -11,6 +11,10 @@ import DataQualityReport from './components/DataQualityReport';
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts';
 import { PreviewData, AnalysisOptions, JobStatusData } from './types';
 
+// Configure API base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+axios.defaults.baseURL = API_BASE_URL;
+
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<PreviewData | null>(null);
