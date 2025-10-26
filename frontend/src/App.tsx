@@ -13,7 +13,6 @@ import { PreviewData, AnalysisOptions, JobStatusData } from './types';
 
 // Configure API base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-axios.defaults.baseURL = API_BASE_URL;
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -35,8 +34,9 @@ function App() {
   // Refs for keyboard shortcuts
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Set axios default header for password
+  // Configure axios with base URL and password header
   useEffect(() => {
+    axios.defaults.baseURL = API_BASE_URL;
     if (testingPassword) {
       axios.defaults.headers.common['X-Testing-Password'] = testingPassword;
     }
@@ -315,6 +315,9 @@ function App() {
                 onChange={(e) => setTestingPassword(e.target.value)}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter' && testingPassword) {
+                    // Configure axios before authenticating
+                    axios.defaults.baseURL = API_BASE_URL;
+                    axios.defaults.headers.common['X-Testing-Password'] = testingPassword;
                     setIsAuthenticated(true);
                   }
                 }}
@@ -327,6 +330,9 @@ function App() {
             <button
               onClick={() => {
                 if (testingPassword) {
+                  // Configure axios before authenticating
+                  axios.defaults.baseURL = API_BASE_URL;
+                  axios.defaults.headers.common['X-Testing-Password'] = testingPassword;
                   setIsAuthenticated(true);
                 } else {
                   alert('Please enter a password');
