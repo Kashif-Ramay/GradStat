@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import { ResultMeta } from '../types';
 import PlotlyChart from './PlotlyChart';
 import AssumptionChecker from './AssumptionChecker';
@@ -412,12 +413,11 @@ const renderTestResults = (results: any) => {
 const Results: React.FC<ResultsProps> = ({ jobId, resultUrl, resultMeta }) => {
   const handleDownload = async () => {
     try {
-      const response = await fetch(`/api/report?id=${jobId}`);
-      if (!response.ok) {
-        alert('Failed to download report');
-        return;
-      }
-      const blob = await response.blob();
+      const response = await axios.get(`/api/report?id=${jobId}`, {
+        responseType: 'blob',
+      });
+      
+      const blob = new Blob([response.data], { type: 'application/zip' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -428,7 +428,7 @@ const Results: React.FC<ResultsProps> = ({ jobId, resultUrl, resultMeta }) => {
       document.body.removeChild(a);
     } catch (error) {
       console.error('Download error:', error);
-      alert('Failed to download report');
+      alert('Failed to download report. Please try again.');
     }
   };
   return (
