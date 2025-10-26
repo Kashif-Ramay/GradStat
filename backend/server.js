@@ -501,11 +501,22 @@ async function processAnalysis(jobId, filePath, options) {
     const resultPath = path.join(RESULTS_DIR, `${jobId}.zip`);
     
     if (response.data.report_zip) {
+      // Ensure results directory exists
+      await fs.mkdir(RESULTS_DIR, { recursive: true });
+      
       // Save base64 zip file
       const zipBuffer = Buffer.from(response.data.report_zip, 'base64');
       await fs.writeFile(resultPath, zipBuffer);
-      console.log(`Report saved to: ${resultPath}`);
+      console.log(`Report saved to: ${resultPath} (${zipBuffer.length} bytes)`);
       job.logs.push(`Report saved: ${resultPath}`);
+      
+      // Verify file was written
+      try {
+        const stats = await fs.stat(resultPath);
+        console.log(`File verified: ${stats.size} bytes`);
+      } catch (err) {
+        console.error('File verification failed:', err);
+      }
     } else {
       console.error('No report_zip in response');
       job.logs.push('Warning: No report ZIP received from worker');
