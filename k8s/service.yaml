@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gradstat-frontend
+  labels:
+    app: gradstat
+    component: frontend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  selector:
+    app: gradstat
+    component: frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gradstat-backend
+  labels:
+    app: gradstat
+    component: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3001
+    targetPort: 3001
+    protocol: TCP
+    name: http
+  selector:
+    app: gradstat
+    component: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gradstat-worker
+  labels:
+    app: gradstat
+    component: worker
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8001
+    targetPort: 8001
+    protocol: TCP
+    name: http
+  selector:
+    app: gradstat
+    component: worker

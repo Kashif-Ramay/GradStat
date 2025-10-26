@@ -1,0 +1,239 @@
+openapi: 3.0.3
+info:
+  title: GradStat API
+  description: Automated statistical analysis platform for graduate research
+  version: 0.1.0
+  contact:
+    name: GradStat Team
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3001
+    description: Local development server
+  - url: https://api.gradstat.example.com
+    description: Production server
+
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      tags:
+        - System
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/validate:
+    post:
+      summary: Validate and preview uploaded dataset
+      tags:
+        - Analysis
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV or Excel file to validate
+      responses:
+        '200':
+          description: Validation successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  preview:
+                    $ref: '#/components/schemas/PreviewData'
+        '400':
+          description: Invalid file or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/analyze:
+    post:
+      summary: Start an analysis job
+      tags:
+        - Analysis
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Data file to analyze
+                options:
+                  type: string
+                  description: JSON string with analysis options
+      responses:
+        '200':
+          description: Analysis job created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                    format: uuid
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/job-status:
+    get:
+      summary: Get status of an analysis job
+      tags:
+        - Analysis
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Job ID
+      responses:
+        '200':
+          description: Job status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/report:
+    get:
+      summary: Download analysis report
+      tags:
+        - Analysis
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Job ID
+      responses:
+        '200':
+          description: Report file
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Report not available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    PreviewData:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            type: string
+        rows:
+          type: array
+          items:
+            type: array
+        types:
+          type: object
+          additionalProperties:
+            type: string
+        rowCount:
+          type: integer
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataIssue'
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    DataIssue:
+      type: object
+      properties:
+        severity:
+          type: string
+          enum: [error, warning, info]
+        column:
+          type: string
+        message:
+          type: string
+        count:
+          type: integer
+
+    JobStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, running, done, failed]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        result_url:
+          type: string
+        result_meta:
+          type: object
+        logs:
+          type: array
+          items:
+            type: string
+        error:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+
+tags:
+  - name: System
+    description: System health and status
+  - name: Analysis
+    description: Statistical analysis operations

@@ -1,0 +1,16 @@
+treatment,age,score,blood_pressure
+Control,25,50,120
+Control,30,55,125
+Control,28,52,122
+Control,32,58,128
+Control,27,54,121
+Treatment_A,29,75,115
+Treatment_A,26,78,118
+Treatment_A,31,80,120
+Treatment_A,33,82,122
+Treatment_A,24,76,116
+Treatment_B,28,85,110
+Treatment_B,30,88,112
+Treatment_B,27,90,108
+Treatment_B,29,87,111
+Treatment_B,26,89,109

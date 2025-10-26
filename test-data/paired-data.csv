@@ -1,0 +1,17 @@
+subject_id,time_point,score,blood_pressure
+1,pre,50,120
+1,post,75,115
+2,pre,55,125
+2,post,80,118
+3,pre,60,130
+3,post,85,122
+4,pre,52,128
+4,post,78,120
+5,pre,58,135
+5,post,82,125
+6,pre,54,122
+6,post,76,116
+7,pre,62,140
+7,post,88,130
+8,pre,56,126
+8,post,81,119
