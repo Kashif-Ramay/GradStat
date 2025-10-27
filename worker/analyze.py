@@ -86,12 +86,24 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 )
 async def health_check():
     """
-    Health check endpoint
-    
-    Returns:
-        dict: Service status
+    Minimal health check endpoint for monitoring services
+    Returns only essential status information
     """
-    return {"status": "ok", "service": "analysis-worker"}
+    return {"status": "healthy"}
+
+@app.get(
+    "/ping",
+    summary="Minimal Ping",
+    description="Ultra-minimal ping endpoint for cron monitoring",
+    tags=["System"]
+)
+async def ping():
+    """
+    Ultra-minimal ping endpoint - returns just 'OK'
+    Use this for cron-job.org to avoid response size limits
+    """
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse("OK")
 
 @app.get(
     "/cache/stats",

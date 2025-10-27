@@ -73,8 +73,8 @@ const passwordProtection = (req, res, next) => {
     return next();
   }
   
-  // Skip for health checks
-  if (req.path === '/health') {
+  // Skip for health checks and ping
+  if (req.path === '/health' || req.path === '/ping') {
     return next();
   }
   
@@ -134,9 +134,14 @@ const upload = multer({
   },
 });
 
-// Health check endpoint
+// Health check endpoint - minimal response for monitoring
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok' });
+});
+
+// Ultra-minimal ping endpoint for cron jobs (even smaller response)
+app.get('/ping', (req, res) => {
+  res.status(200).send('OK');
 });
 
 /**
