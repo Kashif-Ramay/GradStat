@@ -234,39 +234,70 @@ Provide a thoughtful, evidence-based response in 2-3 paragraphs."""
         
         # Check for p-value
         if 'p_value' in results:
-            p = float(results['p_value']) if isinstance(results['p_value'], str) else results['p_value']
-            if p < 0.001:
-                findings.append(f"Highly significant result (p < 0.001)")
-            elif p < 0.05:
-                findings.append(f"Statistically significant result (p = {p:.4f})")
-            else:
-                findings.append(f"Not statistically significant (p = {p:.4f})")
+            try:
+                p = float(results['p_value']) if isinstance(results['p_value'], str) else results['p_value']
+                if p < 0.001:
+                    findings.append(f"Highly significant result (p < 0.001)")
+                elif p < 0.05:
+                    findings.append(f"Statistically significant result (p = {p:.4f})")
+                else:
+                    findings.append(f"Not statistically significant (p = {p:.4f})")
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Could not format p-value: {e}")
         
         # Check effect size
         if 'effect_size' in results:
             effect = results['effect_size']
-            if isinstance(effect, dict):
-                effect_val = float(effect.get('value', 0)) if isinstance(effect.get('value', 0), str) else effect.get('value', 0)
-                effect_type = effect.get('type', 'Effect size')
-                findings.append(f"{effect_type}: {effect_val:.3f}")
-            else:
-                effect_num = float(effect) if isinstance(effect, str) else effect
-                findings.append(f"Effect size: {effect_num:.3f}")
+            try:
+                if isinstance(effect, dict):
+                    effect_val = effect.get('value', 0)
+                    # Try to convert to float, skip if it's a text description
+                    if isinstance(effect_val, str):
+                        try:
+                            effect_val = float(effect_val)
+                            effect_type = effect.get('type', 'Effect size')
+                            findings.append(f"{effect_type}: {effect_val:.3f}")
+                        except ValueError:
+                            # It's a text description like "Large", "Medium", etc.
+                            effect_type = effect.get('type', 'Effect size')
+                            findings.append(f"{effect_type}: {effect_val}")
+                    else:
+                        effect_type = effect.get('type', 'Effect size')
+                        findings.append(f"{effect_type}: {effect_val:.3f}")
+                else:
+                    # Handle simple effect size value
+                    if isinstance(effect, str):
+                        try:
+                            effect_num = float(effect)
+                            findings.append(f"Effect size: {effect_num:.3f}")
+                        except ValueError:
+                            # It's a text description
+                            findings.append(f"Effect size: {effect}")
+                    else:
+                        findings.append(f"Effect size: {effect:.3f}")
+            except Exception as e:
+                logger.warning(f"Could not format effect size: {e}")
         
         # Check R-squared for regression
         if 'r_squared' in results:
-            r2 = float(results['r_squared']) if isinstance(results['r_squared'], str) else results['r_squared']
-            findings.append(f"Model explains {r2*100:.1f}% of variance (R² = {r2:.3f})")
+            try:
+                r2 = float(results['r_squared']) if isinstance(results['r_squared'], str) else results['r_squared']
+                findings.append(f"Model explains {r2*100:.1f}% of variance (R² = {r2:.3f})")
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Could not format r_squared: {e}")
         
         # Check AUC for classification
         if 'auc' in results:
-            auc = float(results['auc']) if isinstance(results['auc'], str) else results['auc']
-            if auc > 0.9:
-                findings.append(f"Excellent classification performance (AUC = {auc:.3f})")
-            elif auc > 0.8:
-                findings.append(f"Good classification performance (AUC = {auc:.3f})")
-            else:
-                findings.append(f"Moderate classification performance (AUC = {auc:.3f})")
+            try:
+                auc = float(results['auc']) if isinstance(results['auc'], str) else results['auc']
+                if auc > 0.9:
+                    findings.append(f"Excellent classification performance (AUC = {auc:.3f})")
+                elif auc > 0.8:
+                    findings.append(f"Good classification performance (AUC = {auc:.3f})")
+                else:
+                    findings.append(f"Moderate classification performance (AUC = {auc:.3f})")
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Could not format AUC: {e}")
         
         return findings if findings else ["Results available for interpretation"]
     
@@ -290,9 +321,12 @@ Provide a thoughtful, evidence-based response in 2-3 paragraphs."""
         # Low power
         results = data.get('results', {})
         if 'power' in results:
-            power = float(results['power']) if isinstance(results['power'], str) else results['power']
-            if power < 0.8:
-                concerns.append(f"Low statistical power ({power:.2f}) - risk of Type II error")
+            try:
+                power = float(results['power']) if isinstance(results['power'], str) else results['power']
+                if power < 0.8:
+                    concerns.append(f"Low statistical power ({power:.2f}) - risk of Type II error")
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Could not format power: {e}")
         
         # High p-value with small sample
         if 'p_value' in results and results['p_value'] > 0.05 and sample_size < 50:
