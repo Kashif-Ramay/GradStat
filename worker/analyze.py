@@ -28,6 +28,7 @@ from typing import Dict, List, Any, Optional
 import logging
 from cache_manager import get_cached_result, cache_result, get_cache_stats, clear_cache
 from test_advisor import recommend_test, auto_detect_from_data
+from llm_interpreter import StatisticalInterpreter
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -91,19 +92,11 @@ async def health_check():
     """
     return {"status": "healthy"}
 
-@app.get(
-    "/ping",
-    summary="Minimal Ping",
-    description="Ultra-minimal ping endpoint for cron monitoring",
-    tags=["System"]
-)
+@app.get("/ping", include_in_schema=False)
 async def ping():
-    """
-    Ultra-minimal ping endpoint - returns just 'OK'
-    Use this for cron-job.org to avoid response size limits
-    """
+    """Ultra-minimal ping - returns plain text OK"""
     from fastapi.responses import PlainTextResponse
-    return PlainTextResponse("OK")
+    return PlainTextResponse("OK", media_type="text/plain")
 
 @app.get(
     "/cache/stats",
@@ -515,5 +508,105 @@ def generate_recommendations(df: pd.DataFrame, issues: List[Dict]) -> List[str]:
         recs.append(f"Dataset contains {len(numeric_cols)} numeric columns suitable for analysis")
     
     return recs
+
+# Initialize LLM interpreter
+llm_interpreter = StatisticalInterpreter()
+
+@app.post(
+    "/interpret",
+    summary="AI Interpretation",
+    description="Get AI-powered interpretation of analysis results",
+    tags=["AI Assistant"]
+)
+async def interpret_results(request: Request):
+    """
+    Generate AI interpretation of statistical results using GPT
+    
+    Request body should contain:
+    - analysis_type: Type of analysis performed
+    - sample_size: Number of observations
+    - variables: List of variable names
+    - results: Dictionary of statistical results
+    - assumptions: Dictionary of assumption check results
+    """
+    try:
+        data = await request.json()
+        interpretation = llm_interpreter.interpret_results(data)
+        return interpretation
+    except Exception as e:
+        logger.error(f"Interpretation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post(
+    "/ask",
+    summary="Ask Question",
+    description="Ask a question about your analysis results",
+    tags=["AI Assistant"]
+)
+async def ask_question(request: Request):
+    """
+    Answer questions about analysis results using AI
+    
+    Request body should contain:
+    - question: The question to answer
+    - analysis_data: Full analysis context
+    - conversation_history: Optional previous messages
+    """
+    try:
+        data = await request.json()
+        question = data.get('question')
+        analysis_data = data.get('analysis_data')
+        history = data.get('conversation_history', [])
+        
+        if not question:
+            raise HTTPException(status_code=400, detail="Question is required")
+        if not analysis_data:
+            raise HTTPException(status_code=400, detail="Analysis data is required")
+        
+        answer = llm_interpreter.answer_question(
+            question, 
+            analysis_data, 
+            history
+        )
+        
+        return {"answer": answer}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Question answering error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post(
+    "/what-if",
+    summary="What-If Analysis",
+    description="Explore hypothetical scenarios based on your results",
+    tags=["AI Assistant"]
+)
+async def what_if_scenario(request: Request):
+    """
+    Answer "what if" questions about the analysis
+    
+    Request body should contain:
+    - scenario: The hypothetical scenario to explore
+    - analysis_data: Full analysis context
+    """
+    try:
+        data = await request.json()
+        scenario = data.get('scenario')
+        analysis_data = data.get('analysis_data')
+        
+        if not scenario:
+            raise HTTPException(status_code=400, detail="Scenario is required")
+        if not analysis_data:
+            raise HTTPException(status_code=400, detail="Analysis data is required")
+        
+        response = llm_interpreter.what_if_analysis(scenario, analysis_data)
+        
+        return {"response": response}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"What-if analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Analysis functions continue in next file...

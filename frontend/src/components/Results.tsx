@@ -6,6 +6,7 @@ import AssumptionChecker from './AssumptionChecker';
 import BestPractices from './BestPractices';
 import InterpretationHelper from './InterpretationHelper';
 import CommonMistakes from './CommonMistakes';
+import AIInterpreter from './AIInterpreter';
 
 interface ResultsProps {
   jobId: string;
@@ -538,6 +539,20 @@ const Results: React.FC<ResultsProps> = ({ jobId, resultUrl, resultMeta }) => {
           </h3>
           <p className="text-sm text-gray-800 leading-relaxed">{resultMeta.conclusion}</p>
         </div>
+      )}
+
+      {/* AI Interpreter */}
+      {resultMeta && (
+        <AIInterpreter 
+          analysisData={{
+            analysis_type: resultMeta.analysis_type || 'Unknown',
+            sample_size: (resultMeta.test_results as any)?.sample_size || (resultMeta.test_results as any)?.n || 0,
+            variables: (resultMeta.test_results as any)?.variables || [],
+            results: resultMeta.test_results || {},
+            assumptions: resultMeta.assumptions || {}
+          }}
+          jobId={jobId}
+        />
       )}
 
       {/* Download Button */}

@@ -141,7 +141,7 @@ app.get('/health', (req, res) => {
 
 // Ultra-minimal ping endpoint for cron jobs (even smaller response)
 app.get('/ping', (req, res) => {
-  res.status(200).send('OK');
+  res.status(200).type('text/plain').send('OK');
 });
 
 /**
@@ -667,6 +667,66 @@ async function startServer() {
 startServer().catch((error) => {
   console.error('Failed to start server:', error);
   process.exit(1);
+});
+
+/**
+ * POST /api/interpret
+ * Get AI interpretation of analysis results
+ */
+app.post('/api/interpret', async (req, res) => {
+  try {
+    console.log('AI interpretation request');
+    const response = await axios.post(`${WORKER_URL}/interpret`, req.body, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Interpretation error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to generate interpretation',
+      details: error.response?.data || error.message 
+    });
+  }
+});
+
+/**
+ * POST /api/ask
+ * Ask a question about analysis results
+ */
+app.post('/api/ask', async (req, res) => {
+  try {
+    console.log('AI question:', req.body.question);
+    const response = await axios.post(`${WORKER_URL}/ask`, req.body, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Question error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to answer question',
+      details: error.response?.data || error.message 
+    });
+  }
+});
+
+/**
+ * POST /api/what-if
+ * Explore what-if scenarios
+ */
+app.post('/api/what-if', async (req, res) => {
+  try {
+    console.log('What-if scenario:', req.body.scenario);
+    const response = await axios.post(`${WORKER_URL}/what-if`, req.body, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('What-if error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to analyze scenario',
+      details: error.response?.data || error.message 
+    });
+  }
 });
 
 // Graceful shutdown
