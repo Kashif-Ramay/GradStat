@@ -30,6 +30,21 @@ const AnalysisSelector: React.FC<AnalysisSelectorProps> = ({
     (col) => columnTypes[col] === 'object' || columnTypes[col] === 'category' || columnTypes[col] === 'string'
   );
 
+  // Helper to identify likely binary columns (for event indicators)
+  const isBinaryColumn = (col: string): boolean => {
+    const colType = columnTypes[col];
+    // Binary columns are typically int64 with values 0 and 1
+    return colType === 'int64' || colType === 'bool';
+  };
+
+  // Helper to check if event column is likely wrong
+  const isEventColumnValid = (col: string): boolean => {
+    if (!col) return true; // Not selected yet
+    const colType = columnTypes[col];
+    // Event column should be numeric (int or bool), not categorical
+    return colType === 'int64' || colType === 'float64' || colType === 'bool' || colType === 'numeric';
+  };
+
   const updateOption = (key: string, value: any) => {
     const newOptions = { ...options, [key]: value };
     console.log('Updating options:', key, '=', value);
@@ -627,17 +642,27 @@ const AnalysisSelector: React.FC<AnalysisSelectorProps> = ({
             <select
               value={options.eventColumn || ''}
               onChange={(e) => updateOption('eventColumn', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                options.eventColumn && !isEventColumnValid(options.eventColumn)
+                  ? 'border-red-500 bg-red-50'
+                  : 'border-gray-300'
+              }`}
             >
               <option value="">Select column...</option>
-              {columns.map((col) => (
+              {numericColumns.map((col) => (
                 <option key={col} value={col}>
-                  {col}
+                  {col} {isBinaryColumn(col) ? '✓ (binary)' : ''}
                 </option>
               ))}
             </select>
+            {options.eventColumn && !isEventColumnValid(options.eventColumn) && (
+              <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+                ⚠️ <strong>Warning:</strong> Column '{options.eventColumn}' appears to be categorical (text). 
+                Event column must contain numeric values (0 or 1). Please select a different column.
+              </div>
+            )}
             <p className="text-xs text-gray-500 mt-1">
-              1 = event occurred, 0 = censored
+              Must contain binary values: 1 = event occurred, 0 = censored
             </p>
           </div>
 
@@ -690,6 +715,18 @@ const AnalysisSelector: React.FC<AnalysisSelectorProps> = ({
             <p className="text-xs text-gray-500 mt-1">
               Selected: {(options.covariates || []).length} covariate(s) - Hold Ctrl/Cmd to select multiple
             </p>
+          </div>
+
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+            <p className="text-sm text-blue-900 font-semibold mb-2">
+              📋 Column Requirements:
+            </p>
+            <ul className="text-xs text-blue-800 space-y-1 ml-4">
+              <li><strong>Duration:</strong> Numeric (time values)</li>
+              <li><strong>Event:</strong> Binary numeric (0 or 1 only)</li>
+              <li><strong>Group:</strong> Any type (for comparing groups)</li>
+              <li><strong>Covariates:</strong> Numeric (for Cox regression)</li>
+            </ul>
           </div>
 
           <div className="p-4 bg-green-50 border border-green-200 rounded-lg mb-4">
@@ -937,10 +974,24 @@ const AnalysisSelector: React.FC<AnalysisSelectorProps> = ({
         </select>
       </div>
 
+      {/* Validation Warning for Survival Analysis */}
+      {analysisType === 'survival' && options.eventColumn && !isEventColumnValid(options.eventColumn) && (
+        <div className="mb-4 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
+          <p className="text-sm text-red-800 font-semibold mb-2">
+            ⚠️ Cannot Run Analysis - Invalid Column Selection
+          </p>
+          <p className="text-xs text-red-700">
+            The Event Column must contain numeric values (0 or 1). 
+            Column '{options.eventColumn}' appears to be categorical. 
+            Please select a numeric column with binary values.
+          </p>
+        </div>
+      )}
+
       {/* Run Analysis Button */}
       <button
         onClick={onAnalyze}
-        disabled={loading}
+        disabled={loading || (analysisType === 'survival' && options.eventColumn && !isEventColumnValid(options.eventColumn))}
         className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-semibold"
       >
         {loading ? (
