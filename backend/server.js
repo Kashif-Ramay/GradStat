@@ -134,6 +134,20 @@ const upload = multer({
   },
 });
 
+// Root endpoint for Render health checks
+app.get('/', (req, res) => {
+  res.json({ 
+    service: 'GradStat Backend',
+    status: 'running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      analyze: '/api/analyze',
+      interpret: '/api/interpret'
+    }
+  });
+});
+
 // Health check endpoint - minimal response for monitoring
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

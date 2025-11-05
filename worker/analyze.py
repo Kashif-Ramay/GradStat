@@ -88,6 +88,27 @@ TEMP_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 @app.get(
+    "/",
+    summary="Root Endpoint",
+    description="API root - returns service information",
+    tags=["System"]
+)
+async def root():
+    """
+    Root endpoint for Render health checks and service info
+    """
+    return {
+        "service": "GradStat Analysis Worker",
+        "status": "running",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/health",
+            "docs": "/docs",
+            "analyze": "/analyze"
+        }
+    }
+
+@app.get(
     "/health",
     summary="Health Check",
     description="Check if the analysis worker service is running",
