@@ -2020,8 +2020,20 @@ def survival_analysis(df: pd.DataFrame, opts: Dict) -> Dict:
     df_clean = df_clean.dropna()
     
     # Ensure proper data types
-    df_clean[duration_col] = pd.to_numeric(df_clean[duration_col])
-    df_clean[event_col] = pd.to_numeric(df_clean[event_col]).astype(int)
+    try:
+        df_clean[duration_col] = pd.to_numeric(df_clean[duration_col])
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Duration column '{duration_col}' must contain numeric values. Error: {str(e)}")
+    
+    try:
+        df_clean[event_col] = pd.to_numeric(df_clean[event_col]).astype(int)
+    except (ValueError, TypeError) as e:
+        unique_vals = df_clean[event_col].unique()[:5]  # Show first 5 unique values
+        raise ValueError(
+            f"Event column '{event_col}' must contain numeric values (0 or 1). "
+            f"Found values: {unique_vals}. "
+            f"Please select a column with binary event indicators (1=event occurred, 0=censored)."
+        )
     
     plots = []
     test_results = {}
