@@ -653,36 +653,6 @@ app.use((err, req, res, next) => {
   }
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found' });
-});
-
-// Start server
-async function startServer() {
-  await ensureDirectories();
-  
-  app.listen(PORT, () => {
-    console.log('='.repeat(50));
-    console.log('🚀 GradStat Backend Server Started');
-    console.log('='.repeat(50));
-    console.log(`Port: ${PORT}`);
-    console.log(`Worker URL: ${WORKER_URL}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`Max File Size: ${(parseInt(process.env.MAX_FILE_SIZE) || 10485760) / (1024 * 1024)}MB`);
-    console.log(`Rate Limit: ${process.env.RATE_LIMIT_MAX || 20} requests per ${(parseInt(process.env.RATE_LIMIT_WINDOW) || 900000) / 60000} minutes`);
-    console.log(`Analysis Limit: ${process.env.ANALYSIS_LIMIT_MAX || 5} per hour`);
-    console.log(`Password Protection: ${process.env.TESTING_PASSWORD ? 'ENABLED ✅' : 'DISABLED ⚠️'}`);
-    console.log(`Auto Cleanup: ENABLED (uploads: 1h, results: 24h)`);
-    console.log('='.repeat(50));
-  });
-}
-
-startServer().catch((error) => {
-  console.error('Failed to start server:', error);
-  process.exit(1);
-});
-
 /**
  * POST /api/interpret
  * Get AI interpretation of analysis results
@@ -741,6 +711,36 @@ app.post('/api/what-if', async (req, res) => {
       details: error.response?.data || error.message 
     });
   }
+});
+
+// 404 handler - MUST be last!
+app.use((req, res) => {
+  res.status(404).json({ error: 'Endpoint not found' });
+});
+
+// Start server
+async function startServer() {
+  await ensureDirectories();
+  
+  app.listen(PORT, () => {
+    console.log('='.repeat(50));
+    console.log('🚀 GradStat Backend Server Started');
+    console.log('='.repeat(50));
+    console.log(`Port: ${PORT}`);
+    console.log(`Worker URL: ${WORKER_URL}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Max File Size: ${(parseInt(process.env.MAX_FILE_SIZE) || 10485760) / (1024 * 1024)}MB`);
+    console.log(`Rate Limit: ${process.env.RATE_LIMIT_MAX || 20} requests per ${(parseInt(process.env.RATE_LIMIT_WINDOW) || 900000) / 60000} minutes`);
+    console.log(`Analysis Limit: ${process.env.ANALYSIS_LIMIT_MAX || 5} per hour`);
+    console.log(`Password Protection: ${process.env.TESTING_PASSWORD ? 'ENABLED ✅' : 'DISABLED ⚠️'}`);
+    console.log(`Auto Cleanup: ENABLED (uploads: 1h, results: 24h)`);
+    console.log('='.repeat(50));
+  });
+}
+
+startServer().catch((error) => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
 });
 
 // Graceful shutdown
