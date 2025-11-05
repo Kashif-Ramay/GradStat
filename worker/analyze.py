@@ -28,11 +28,19 @@ from typing import Dict, List, Any, Optional
 import logging
 from cache_manager import get_cached_result, cache_result, get_cache_stats, clear_cache
 from test_advisor import recommend_test, auto_detect_from_data
-from llm_interpreter import StatisticalInterpreter
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Try to import LLM interpreter (optional feature)
+try:
+    from llm_interpreter import StatisticalInterpreter
+    LLM_AVAILABLE = True
+except Exception as e:
+    logger.warning(f"LLM interpreter not available: {e}")
+    StatisticalInterpreter = None
+    LLM_AVAILABLE = False
 
 app = FastAPI(
     title="GradStat Analysis API",
@@ -509,8 +517,8 @@ def generate_recommendations(df: pd.DataFrame, issues: List[Dict]) -> List[str]:
     
     return recs
 
-# Initialize LLM interpreter
-llm_interpreter = StatisticalInterpreter()
+# Initialize LLM interpreter (if available)
+llm_interpreter = StatisticalInterpreter() if LLM_AVAILABLE else None
 
 @app.post(
     "/interpret",
@@ -529,6 +537,15 @@ async def interpret_results(request: Request):
     - results: Dictionary of statistical results
     - assumptions: Dictionary of assumption check results
     """
+    if not LLM_AVAILABLE or llm_interpreter is None:
+        return {
+            "error": "LLM service not available",
+            "interpretation": "AI interpretation requires the OpenAI package. Install with: pip install openai>=1.0.0",
+            "key_findings": [],
+            "concerns": [],
+            "next_steps": []
+        }
+    
     try:
         data = await request.json()
         interpretation = llm_interpreter.interpret_results(data)
@@ -552,6 +569,9 @@ async def ask_question(request: Request):
     - analysis_data: Full analysis context
     - conversation_history: Optional previous messages
     """
+    if not LLM_AVAILABLE or llm_interpreter is None:
+        return {"answer": "AI question answering requires the OpenAI package. Install with: pip install openai>=1.0.0"}
+    
     try:
         data = await request.json()
         question = data.get('question')
@@ -590,6 +610,9 @@ async def what_if_scenario(request: Request):
     - scenario: The hypothetical scenario to explore
     - analysis_data: Full analysis context
     """
+    if not LLM_AVAILABLE or llm_interpreter is None:
+        return {"response": "AI scenario analysis requires the OpenAI package. Install with: pip install openai>=1.0.0"}
+    
     try:
         data = await request.json()
         scenario = data.get('scenario')

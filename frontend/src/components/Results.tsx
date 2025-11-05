@@ -551,7 +551,6 @@ const Results: React.FC<ResultsProps> = ({ jobId, resultUrl, resultMeta }) => {
             results: resultMeta.test_results || {},
             assumptions: resultMeta.assumptions || {}
           }}
-          jobId={jobId}
         />
       )}
 

@@ -3,11 +3,18 @@ LLM-powered statistical interpretation service
 Uses OpenAI GPT to explain results and answer questions
 """
 
-import openai
 import os
 import json
 from typing import Dict, Any, List, Optional
 import logging
+
+# Try to import openai, but don't fail if not available
+try:
+    import openai
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+    openai = None
 
 logger = logging.getLogger(__name__)
 
@@ -19,15 +26,22 @@ class StatisticalInterpreter:
     """
     
     def __init__(self):
+        if not OPENAI_AVAILABLE:
+            logger.warning("OpenAI package not installed - LLM features will be disabled")
+            self.api_key = None
+            self.model = None
+            return
+            
         self.api_key = os.getenv('OPENAI_API_KEY')
         if not self.api_key:
             logger.warning("OPENAI_API_KEY not set - LLM features will be disabled")
-        openai.api_key = self.api_key
+        else:
+            openai.api_key = self.api_key
         self.model = "gpt-4o-mini"  # Cost-effective model
         
     def is_available(self) -> bool:
         """Check if LLM service is available"""
-        return self.api_key is not None
+        return OPENAI_AVAILABLE and self.api_key is not None
     
     def create_context_prompt(self, analysis_data: Dict[str, Any]) -> str:
         """

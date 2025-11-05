@@ -3,10 +3,9 @@ import axios from 'axios';
 
 interface AIInterpreterProps {
   analysisData: any;
-  jobId: string;
 }
 
-const AIInterpreter: React.FC<AIInterpreterProps> = ({ analysisData, jobId }) => {
+const AIInterpreter: React.FC<AIInterpreterProps> = ({ analysisData }) => {
   const [interpretation, setInterpretation] = useState<any>(null);
   const [question, setQuestion] = useState('');
   const [conversation, setConversation] = useState<Array<{role: string, content: string}>>([]);
