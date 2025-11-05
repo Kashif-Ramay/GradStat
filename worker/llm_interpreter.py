@@ -234,7 +234,7 @@ Provide a thoughtful, evidence-based response in 2-3 paragraphs."""
         
         # Check for p-value
         if 'p_value' in results:
-            p = results['p_value']
+            p = float(results['p_value']) if isinstance(results['p_value'], str) else results['p_value']
             if p < 0.001:
                 findings.append(f"Highly significant result (p < 0.001)")
             elif p < 0.05:
@@ -246,20 +246,21 @@ Provide a thoughtful, evidence-based response in 2-3 paragraphs."""
         if 'effect_size' in results:
             effect = results['effect_size']
             if isinstance(effect, dict):
-                effect_val = effect.get('value', 0)
+                effect_val = float(effect.get('value', 0)) if isinstance(effect.get('value', 0), str) else effect.get('value', 0)
                 effect_type = effect.get('type', 'Effect size')
                 findings.append(f"{effect_type}: {effect_val:.3f}")
             else:
-                findings.append(f"Effect size: {effect:.3f}")
+                effect_num = float(effect) if isinstance(effect, str) else effect
+                findings.append(f"Effect size: {effect_num:.3f}")
         
         # Check R-squared for regression
         if 'r_squared' in results:
-            r2 = results['r_squared']
+            r2 = float(results['r_squared']) if isinstance(results['r_squared'], str) else results['r_squared']
             findings.append(f"Model explains {r2*100:.1f}% of variance (R² = {r2:.3f})")
         
         # Check AUC for classification
         if 'auc' in results:
-            auc = results['auc']
+            auc = float(results['auc']) if isinstance(results['auc'], str) else results['auc']
             if auc > 0.9:
                 findings.append(f"Excellent classification performance (AUC = {auc:.3f})")
             elif auc > 0.8:
@@ -288,8 +289,10 @@ Provide a thoughtful, evidence-based response in 2-3 paragraphs."""
         
         # Low power
         results = data.get('results', {})
-        if 'power' in results and results['power'] < 0.8:
-            concerns.append(f"Low statistical power ({results['power']:.2f}) - risk of Type II error")
+        if 'power' in results:
+            power = float(results['power']) if isinstance(results['power'], str) else results['power']
+            if power < 0.8:
+                concerns.append(f"Low statistical power ({power:.2f}) - risk of Type II error")
         
         # High p-value with small sample
         if 'p_value' in results and results['p_value'] > 0.05 and sample_size < 50:

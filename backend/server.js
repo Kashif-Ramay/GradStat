@@ -671,6 +671,8 @@ app.post('/api/interpret', async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error('Interpretation error:', error.message);
+    console.error('Worker response:', error.response?.data);
+    console.error('Worker status:', error.response?.status);
     res.status(500).json({ 
       error: 'Failed to generate interpretation',
       details: error.response?.data || error.message 
