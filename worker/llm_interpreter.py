@@ -312,11 +312,19 @@ Provide a thoughtful, evidence-based response in 2-3 paragraphs."""
         
         # Assumption violations
         assumptions = data.get('assumptions', {})
-        for assumption, result in assumptions.items():
-            if isinstance(result, dict):
-                passed = result.get('passed', True)
-                if not passed:
-                    concerns.append(f"Violated assumption: {assumption}")
+        if isinstance(assumptions, dict):
+            for assumption, result in assumptions.items():
+                if isinstance(result, dict):
+                    passed = result.get('passed', True)
+                    if not passed:
+                        concerns.append(f"Violated assumption: {assumption}")
+        elif isinstance(assumptions, list):
+            # Handle assumptions as a list
+            for item in assumptions:
+                if isinstance(item, dict):
+                    if not item.get('passed', True):
+                        name = item.get('name', 'Unknown assumption')
+                        concerns.append(f"Violated assumption: {name}")
         
         # Low power
         results = data.get('results', {})
