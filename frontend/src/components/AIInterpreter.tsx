@@ -13,17 +13,25 @@ const AIInterpreter: React.FC<AIInterpreterProps> = ({ analysisData }) => {
   const [activeTab, setActiveTab] = useState<'interpretation' | 'chat' | 'whatif'>('interpretation');
   const [error, setError] = useState<string | null>(null);
 
+  // Debug: Log when component mounts
+  useEffect(() => {
+    console.log('AIInterpreter mounted with data:', analysisData);
+  }, []);
+
   // Load initial interpretation
   useEffect(() => {
     if (analysisData && activeTab === 'interpretation' && !interpretation) {
+      console.log('Loading interpretation...');
       loadInterpretation();
     }
   }, [analysisData, activeTab]);
 
   const loadInterpretation = async () => {
+    console.log('loadInterpretation called');
     setLoading(true);
     setError(null);
     try {
+      console.log('Sending interpretation request...');
       const response = await axios.post('/api/interpret', {
         analysis_type: analysisData.analysis_type || 'Unknown',
         sample_size: analysisData.sample_size || 0,
@@ -31,10 +39,12 @@ const AIInterpreter: React.FC<AIInterpreterProps> = ({ analysisData }) => {
         results: analysisData.results || {},
         assumptions: analysisData.assumptions || {}
       });
+      console.log('Interpretation response:', response.data);
       setInterpretation(response.data);
     } catch (error: any) {
       console.error('Interpretation error:', error);
-      setError(error.response?.data?.error || 'Failed to generate interpretation. Please check if OpenAI API key is configured.');
+      console.error('Error response:', error.response);
+      setError(error.response?.data?.error || error.response?.data?.detail || 'Failed to generate interpretation. AI features may not be available yet.');
     } finally {
       setLoading(false);
     }
