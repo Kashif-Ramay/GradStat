@@ -232,6 +232,12 @@ Provide a thoughtful, evidence-based response in 2-3 paragraphs."""
         findings = []
         results = data.get('results', {})
         
+        # Extract sample size from various possible locations
+        sample_size = data.get('sample_size', 0)
+        if sample_size == 0:
+            # Try to get from results
+            sample_size = results.get('n', results.get('sample_size', results.get('n_obs', 0)))
+        
         # Check for p-value
         if 'p_value' in results:
             try:
@@ -299,15 +305,40 @@ Provide a thoughtful, evidence-based response in 2-3 paragraphs."""
             except (ValueError, TypeError) as e:
                 logger.warning(f"Could not format AUC: {e}")
         
+        # Check for correlation coefficient
+        if 'correlation' in results or 'r' in results:
+            try:
+                r = results.get('correlation', results.get('r', 0))
+                r_val = float(r) if isinstance(r, str) else r
+                if abs(r_val) > 0.7:
+                    strength = "strong"
+                elif abs(r_val) > 0.4:
+                    strength = "moderate"
+                else:
+                    strength = "weak"
+                direction = "positive" if r_val > 0 else "negative"
+                findings.append(f"{strength.capitalize()} {direction} correlation (r = {r_val:.3f})")
+                
+                # Add sample size context if available
+                if sample_size > 0:
+                    findings.append(f"Based on {sample_size} observations")
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Could not format correlation: {e}")
+        
         return findings if findings else ["Results available for interpretation"]
     
     def _identify_concerns(self, data: Dict[str, Any]) -> List[str]:
         """Identify potential concerns in the analysis"""
         concerns = []
         
-        # Small sample size
+        # Extract sample size from various possible locations
         sample_size = data.get('sample_size', 0)
-        if sample_size < 30:
+        if sample_size == 0:
+            results = data.get('results', {})
+            sample_size = results.get('n', results.get('sample_size', results.get('n_obs', 0)))
+        
+        # Small sample size (only if we have a valid sample size)
+        if sample_size > 0 and sample_size < 30:
             concerns.append(f"Small sample size (n = {sample_size}) may limit generalizability")
         
         # Assumption violations
@@ -365,7 +396,11 @@ Provide a thoughtful, evidence-based response in 2-3 paragraphs."""
         
         # Based on assumptions
         assumptions = data.get('assumptions', {})
-        violated = [k for k, v in assumptions.items() if isinstance(v, dict) and not v.get('passed', True)]
+        violated = []
+        if isinstance(assumptions, dict):
+            violated = [k for k, v in assumptions.items() if isinstance(v, dict) and not v.get('passed', True)]
+        elif isinstance(assumptions, list):
+            violated = [item.get('name', 'Unknown') for item in assumptions if isinstance(item, dict) and not item.get('passed', True)]
         if violated:
             steps.append(f"→ Address assumption violations: {', '.join(violated)}")
         
