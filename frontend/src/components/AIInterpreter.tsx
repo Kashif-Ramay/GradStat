@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Configure API base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
 interface AIInterpreterProps {
   analysisData: any;
 }
@@ -32,7 +35,7 @@ const AIInterpreter: React.FC<AIInterpreterProps> = ({ analysisData }) => {
     setError(null);
     try {
       console.log('Sending interpretation request...');
-      const response = await axios.post('/api/interpret', {
+      const response = await axios.post(`${API_BASE_URL}/api/interpret`, {
         analysis_type: analysisData.analysis_type || 'Unknown',
         sample_size: analysisData.sample_size || 0,
         variables: analysisData.variables || [],
@@ -56,7 +59,7 @@ const AIInterpreter: React.FC<AIInterpreterProps> = ({ analysisData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/ask', {
+      const response = await axios.post(`${API_BASE_URL}/api/ask`, {
         question,
         analysis_data: {
           analysis_type: analysisData.analysis_type || 'Unknown',
@@ -88,7 +91,7 @@ const AIInterpreter: React.FC<AIInterpreterProps> = ({ analysisData }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/what-if', {
+      const response = await axios.post(`${API_BASE_URL}/api/what-if`, {
         scenario,
         analysis_data: {
           analysis_type: analysisData.analysis_type || 'Unknown',
