@@ -20,6 +20,10 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
+
+// Trust proxy for Render.com (needed for rate limiting and X-Forwarded-For headers)
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 3001;
 const WORKER_URL = process.env.WORKER_URL || 'http://localhost:8001';
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
@@ -661,7 +665,8 @@ app.post('/api/interpret', async (req, res) => {
   try {
     console.log('AI interpretation request');
     const response = await axios.post(`${WORKER_URL}/interpret`, req.body, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000  // 30 second timeout for OpenAI API calls
     });
     res.json(response.data);
   } catch (error) {
@@ -681,7 +686,8 @@ app.post('/api/ask', async (req, res) => {
   try {
     console.log('AI question:', req.body.question);
     const response = await axios.post(`${WORKER_URL}/ask`, req.body, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000  // 30 second timeout for OpenAI API calls
     });
     res.json(response.data);
   } catch (error) {
@@ -701,7 +707,8 @@ app.post('/api/what-if', async (req, res) => {
   try {
     console.log('What-if scenario:', req.body.scenario);
     const response = await axios.post(`${WORKER_URL}/what-if`, req.body, {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000  // 30 second timeout for OpenAI API calls
     });
     res.json(response.data);
   } catch (error) {
