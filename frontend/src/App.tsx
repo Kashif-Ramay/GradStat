@@ -8,6 +8,7 @@ import Results from './components/Results';
 import KeyboardShortcutsHelp from './components/KeyboardShortcutsHelp';
 import TestAdvisor from './components/TestAdvisor';
 import DataQualityReport from './components/DataQualityReport';
+import HomePage from './components/HomePage';
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts';
 import { PreviewData, AnalysisOptions, JobStatusData } from './types';
 
@@ -15,6 +16,7 @@ import { PreviewData, AnalysisOptions, JobStatusData } from './types';
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 function App() {
+  const [showHomePage, setShowHomePage] = useState<boolean>(true);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [analysisType, setAnalysisType] = useState<string>('descriptive');
@@ -352,19 +354,51 @@ function App() {
     );
   }
 
+  // Show home page if enabled and no data uploaded
+  if (showHomePage && !file && !preview && !showTestAdvisor && !showPowerAnalysis) {
+    return (
+      <HomePage
+        onGetStarted={() => setShowHomePage(false)}
+        onTestAdvisor={() => {
+          setShowHomePage(false);
+          setShowTestAdvisor(true);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                GradStat
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Automated Statistical Analysis for Postgraduate Research
-              </p>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => {
+                  setShowHomePage(true);
+                  setFile(null);
+                  setPreview(null);
+                  setShowTestAdvisor(false);
+                  setShowPowerAnalysis(false);
+                  setJobId(null);
+                  setJobStatus(null);
+                }}
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+                title="Go to Home"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              </button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  GradStat
+                </h1>
+                <p className="text-sm text-gray-600 mt-1">
+                  Automated Statistical Analysis for Postgraduate Research
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <button 
