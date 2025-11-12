@@ -9,8 +9,11 @@ import KeyboardShortcutsHelp from './components/KeyboardShortcutsHelp';
 import TestAdvisor from './components/TestAdvisor';
 import DataQualityReport from './components/DataQualityReport';
 import HomePage from './components/HomePage';
+import FeedbackForm from './components/FeedbackForm';
+import ExampleDatasets from './components/ExampleDatasets';
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts';
 import { PreviewData, AnalysisOptions, JobStatusData } from './types';
+import { initGA, analytics } from './utils/analytics';
 
 // Configure API base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
@@ -35,6 +38,11 @@ function App() {
   
   // Refs for keyboard shortcuts
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize Google Analytics
+  useEffect(() => {
+    initGA();
+  }, []);
 
   // Configure axios with base URL and password header
   useEffect(() => {
@@ -543,6 +551,20 @@ function App() {
                 fileInputRef={fileInputRef}
               />
 
+              {/* Example Datasets Button */}
+              {!file && (
+                <div className="flex justify-center">
+                  <ExampleDatasets
+                    onSelectDataset={async (exampleFile, recommendedAnalysis) => {
+                      setFile(exampleFile);
+                      setAnalysisType(recommendedAnalysis);
+                      // Trigger validation after state update
+                      setTimeout(() => handleValidate(), 100);
+                    }}
+                  />
+                </div>
+              )}
+
               {preview && (
                 <AnalysisSelector
                   analysisType={analysisType}
@@ -636,6 +658,9 @@ function App() {
         isOpen={showShortcutsHelp} 
         onClose={() => setShowShortcutsHelp(false)} 
       />
+
+      {/* Feedback Form */}
+      <FeedbackForm analysisType={analysisType} />
 
       {/* Footer */}
       <footer className="mt-16 bg-white border-t border-gray-200">

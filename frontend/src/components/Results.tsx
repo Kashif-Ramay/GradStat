@@ -7,6 +7,7 @@ import BestPractices from './BestPractices';
 import InterpretationHelper from './InterpretationHelper';
 import CommonMistakes from './CommonMistakes';
 import AIInterpreter from './AIInterpreter';
+import SocialShare from './SocialShare';
 
 interface ResultsProps {
   jobId: string;
@@ -565,6 +566,12 @@ const Results: React.FC<ResultsProps> = ({ jobId, resultUrl, resultMeta }) => {
           </button>
         </div>
       )}
+
+      {/* Social Sharing */}
+      <SocialShare 
+        analysisType={resultMeta?.analysis_type}
+        resultSummary={resultMeta?.summary}
+      />
     </div>
   );
 };
