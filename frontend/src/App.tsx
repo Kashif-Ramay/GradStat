@@ -111,9 +111,7 @@ function App() {
           const formData = new FormData();
           formData.append('file', uploadedFile);
 
-          const response = await axios.post('/api/validate', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
+          const response = await axios.post('/api/validate', formData);
 
           setPreview(response.data.preview);
           
@@ -213,9 +211,7 @@ function App() {
       }
       console.log('=== END FRONTEND DEBUG ===');
 
-      const response = await axios.post('/api/validate', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await axios.post('/api/validate', formData);
 
       setPreview(response.data.preview);
       
@@ -275,9 +271,7 @@ function App() {
       formData.append('analysisType', backendAnalysisType);
       formData.append('options', JSON.stringify({ analysisType: backendAnalysisType, ...cleanedOptions }));
 
-      const response = await axios.post('/api/analyze', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await axios.post('/api/analyze', formData);
 
       setJobId(response.data.job_id);
     } catch (err: any) {

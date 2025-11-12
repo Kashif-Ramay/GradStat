@@ -233,9 +233,7 @@ const TestAdvisor: React.FC<TestAdvisorProps> = ({ onSelectTest }) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await axios.post('/api/test-advisor/analyze-dataset', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await axios.post('/api/test-advisor/analyze-dataset', formData);
 
       if (response.data.ok) {
         setPreAnalysisResults(response.data);
@@ -313,9 +311,7 @@ const TestAdvisor: React.FC<TestAdvisorProps> = ({ onSelectTest }) => {
       formData.append('file', uploadedFile);
       formData.append('questionKey', questionKey);
 
-      const response = await axios.post('/api/test-advisor/auto-answer', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await axios.post('/api/test-advisor/auto-answer', formData);
 
       if (response.data.ok) {
         // Auto-fill the answer
