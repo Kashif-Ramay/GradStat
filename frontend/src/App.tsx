@@ -99,7 +99,11 @@ function App() {
           const formData = new FormData();
           formData.append('file', uploadedFile);
 
-          const response = await axios.post('/api/validate', formData);
+          const response = await axios.post('/api/validate', formData, {
+            headers: {
+              'Content-Type': undefined  // Let browser set it with boundary
+            }
+          });
 
           setPreview(response.data.preview);
           
@@ -191,7 +195,11 @@ function App() {
       }
       console.log('=== END FRONTEND DEBUG ===');
 
-      const response = await axios.post('/api/validate', formData);
+      const response = await axios.post('/api/validate', formData, {
+        headers: {
+          'Content-Type': undefined  // Let browser set it with boundary
+        }
+      });
 
       setPreview(response.data.preview);
       
