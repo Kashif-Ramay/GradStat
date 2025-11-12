@@ -75,15 +75,20 @@ app.use(cors({
 // Conditional body parsing - only for non-file-upload routes
 // This prevents interference with multer
 app.use((req, res, next) => {
+  // Debug: log the path
+  console.log('Request path:', req.path, 'Method:', req.method);
+  
   // Skip body parsing for file upload endpoints
   if (req.path.includes('/validate') || 
       req.path.includes('/analyze') || 
       req.path.includes('/auto-detect') ||
       req.path.includes('/auto-answer') ||
       req.path.includes('/analyze-dataset')) {
+    console.log('Skipping body parser for file upload route');
     return next();
   }
   // Apply JSON parsing for other routes
+  console.log('Applying JSON body parser');
   express.json()(req, res, next);
 });
 
