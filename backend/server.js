@@ -1,6 +1,11 @@
 /**
  * GradStat Backend API Server
  * Express server that orchestrates file uploads and analysis jobs
+ * 
+ * Copyright (c) 2024-2025 Kashif Ramay
+ * All rights reserved.
+ * 
+ * This software is provided for educational and research purposes.
  */
 
 const express = require('express');

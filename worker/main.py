@@ -1,6 +1,11 @@
 """
-Main entry point for GradStat analysis worker
-Imports all analysis functions and report generation
+GradStat Analysis Worker
+Main entry point for statistical analysis functions
+
+Copyright (c) 2024-2025 Kashif Ramay
+All rights reserved.
+
+This software is provided for educational and research purposes.
 """
 
 from fastapi import FastAPI

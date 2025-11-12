@@ -1,3 +1,11 @@
+/**
+ * GradStat - Statistical Analysis Platform
+ * Copyright (c) 2024-2025 Kashif Ramay
+ * All rights reserved.
+ * 
+ * This software is provided for educational and research purposes.
+ */
+
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import DataUpload from './components/DataUpload';

@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "description": "GradStat backend API server",
   "main": "server.js",
+  "author": "Kashif Ramay",
+  "copyright": "Copyright (c) 2024-2025 Kashif Ramay",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",

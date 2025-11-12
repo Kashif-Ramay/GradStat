@@ -2,6 +2,9 @@
   "name": "gradstat-frontend",
   "version": "0.1.0",
   "private": true,
+  "author": "Kashif Ramay",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2024-2025 Kashif Ramay",
   "dependencies": {
     "@types/node": "^18.0.0",
     "@types/plotly.js": "^2.12.0",

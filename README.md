@@ -468,10 +468,27 @@ Built with ❤️ for graduate students and researchers who want to:
 
 ---
 
+## 📄 License & Copyright
+
+**Copyright (c) 2024-2025 Kashif Ramay. All rights reserved.**
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### What This Means:
+- ✅ Free to use for research and education
+- ✅ Free to modify and distribute
+- ✅ Free for commercial use
+- ✅ Attribution required
+- ❌ No warranty provided
+
+---
+
 <div align="center">
 
 **⭐ If GradStat helps your research, please star this repository! ⭐**
 
 Made with 🧠 and ☕ by researchers, for researchers.
+
+**Copyright (c) 2024-2025 Kashif Ramay**
 
 </div>

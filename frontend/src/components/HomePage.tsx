@@ -268,6 +268,18 @@ const HomePage: React.FC<HomePageProps> = ({ onGetStarted, onTestAdvisor }) => {
           animation-delay: 4s;
         }
       `}</style>
+
+      {/* Footer with Copyright */}
+      <footer className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-8 mt-20">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-sm text-gray-400 mb-2">
+            Copyright © 2024-2025 Kashif Ramay. All rights reserved.
+          </p>
+          <p className="text-xs text-gray-500">
+            Licensed under the MIT License. Free for educational and research use.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
