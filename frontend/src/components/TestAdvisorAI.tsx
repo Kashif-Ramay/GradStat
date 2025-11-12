@@ -112,13 +112,29 @@ const TestAdvisorAI: React.FC<TestAdvisorAIProps> = ({ dataSummary, currentAnswe
     }
   };
 
-  const suggestedQuestions = [
-    "What's the difference between paired and independent samples?",
-    "How do I know if my data is normally distributed?",
-    "What sample size do I need for a t-test?",
-    "When should I use ANOVA instead of t-test?",
-    "What are the assumptions of linear regression?"
-  ];
+  // Generate context-aware suggested questions
+  const getSuggestedQuestions = () => {
+    const baseQuestions = [
+      "What's the difference between paired and independent samples?",
+      "How do I know if my data is normally distributed?",
+      "What sample size do I need for a t-test?",
+      "When should I use ANOVA instead of t-test?",
+      "What are the assumptions of linear regression?"
+    ];
+    
+    const dataQuestions = [];
+    if (dataSummary) {
+      dataQuestions.push("What is the best statistical test for my uploaded data?");
+      dataQuestions.push("What correlation test should I use for this data?");
+      if (dataSummary.n_rows < 30) {
+        dataQuestions.push("Is my sample size adequate for statistical testing?");
+      }
+    }
+    
+    return dataSummary ? [...dataQuestions, ...baseQuestions] : baseQuestions;
+  };
+  
+  const suggestedQuestions = getSuggestedQuestions();
 
   const commonTests = [
     "Independent t-test",
@@ -199,11 +215,79 @@ const TestAdvisorAI: React.FC<TestAdvisorAIProps> = ({ dataSummary, currentAnswe
             />
           </div>
 
+          {/* Data Context Display */}
           {dataSummary && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-900">
-                📊 <strong>Data uploaded:</strong> {dataSummary.n_rows} rows, {dataSummary.n_columns} columns
-              </p>
+            <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">📊</span>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-blue-900 mb-2">Your Data Context</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm text-blue-800 mb-3">
+                    <div>• <strong>Sample size:</strong> {dataSummary.n_rows} observations</div>
+                    <div>• <strong>Variables:</strong> {dataSummary.n_columns} columns</div>
+                    {dataSummary.column_types && (
+                      <>
+                        <div>• <strong>Numeric:</strong> {Object.values(dataSummary.column_types).filter((t: any) => t === 'int64' || t === 'float64').length} variables</div>
+                        <div>• <strong>Categorical:</strong> {Object.values(dataSummary.column_types).filter((t: any) => t === 'object').length} variables</div>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setDescription("What is the best statistical test for this data?")}
+                      className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
+                    >
+                      ✨ Recommend test for this data
+                    </button>
+                    <button
+                      onClick={() => setDescription("What correlation test should I use for this data?")}
+                      className="px-3 py-1 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-colors"
+                    >
+                      🔗 Correlation analysis
+                    </button>
+                    {dataSummary.n_rows < 30 && (
+                      <button
+                        onClick={() => setDescription("Is my sample size adequate? What tests can I use?")}
+                        className="px-3 py-1 text-xs bg-orange-600 hover:bg-orange-700 text-white rounded-full transition-colors"
+                      >
+                        ⚠️ Sample size check
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Wizard Answers Display */}
+          {currentAnswers && Object.keys(currentAnswers).length > 0 && (
+            <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">🧭</span>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-green-900 mb-2">Wizard Progress</h4>
+                  <div className="text-sm text-green-800 space-y-1">
+                    {currentAnswers.researchQuestion && (
+                      <div>• <strong>Research goal:</strong> {currentAnswers.researchQuestion.replace(/_/g, ' ')}</div>
+                    )}
+                    {currentAnswers.isNormal !== undefined && (
+                      <div>• <strong>Data normality:</strong> {currentAnswers.isNormal ? 'Normal' : 'Non-normal'}</div>
+                    )}
+                    {currentAnswers.isPaired !== undefined && (
+                      <div>• <strong>Sample type:</strong> {currentAnswers.isPaired ? 'Paired' : 'Independent'}</div>
+                    )}
+                    {currentAnswers.nGroups && (
+                      <div>• <strong>Number of groups:</strong> {currentAnswers.nGroups}</div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setDescription("Based on my wizard answers, what test should I use?")}
+                    className="mt-3 px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded-full transition-colors"
+                  >
+                    🎯 Get recommendation based on wizard
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
