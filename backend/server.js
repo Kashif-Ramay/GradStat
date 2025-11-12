@@ -193,7 +193,14 @@ app.get('/ping', (req, res) => {
  */
 app.post('/api/validate', upload.single('file'), async (req, res) => {
   try {
+    // Debug logging
+    console.log('Validate request received');
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('File:', req.file);
+    console.log('Body:', req.body);
+    
     if (!req.file) {
+      console.error('No file in request');
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
