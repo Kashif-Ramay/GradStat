@@ -169,8 +169,27 @@ function App() {
     setJobStatus(null);
 
     try {
+      // Debug: Check what we're actually sending
+      console.log('=== FRONTEND DEBUG ===');
+      console.log('targetFile:', targetFile);
+      console.log('targetFile type:', typeof targetFile);
+      console.log('targetFile instanceof File:', targetFile instanceof File);
+      console.log('targetFile instanceof Blob:', targetFile instanceof Blob);
+      console.log('targetFile.name:', targetFile?.name);
+      console.log('targetFile.size:', targetFile?.size);
+      console.log('targetFile.type:', targetFile?.type);
+      
       const formData = new FormData();
       formData.append('file', targetFile);
+      
+      // Debug: Check FormData contents
+      console.log('FormData entries:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0], ':', pair[1]);
+        console.log('Value type:', typeof pair[1]);
+        console.log('Value instanceof File:', pair[1] instanceof File);
+      }
+      console.log('=== END FRONTEND DEBUG ===');
 
       const response = await axios.post('/api/validate', formData);
 
