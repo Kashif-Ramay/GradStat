@@ -147,8 +147,10 @@ function App() {
   };
 
   // Validate and preview uploaded file
-  const handleValidate = async () => {
-    if (!file) {
+  const handleValidate = async (fileToValidate?: File) => {
+    const targetFile = fileToValidate || file;
+    
+    if (!targetFile) {
       setError('Please select a file first');
       return;
     }
@@ -162,7 +164,7 @@ function App() {
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', targetFile);
 
       const response = await axios.post('/api/validate', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -558,8 +560,8 @@ function App() {
                     onSelectDataset={async (exampleFile, recommendedAnalysis) => {
                       setFile(exampleFile);
                       setAnalysisType(recommendedAnalysis);
-                      // Trigger validation after state update
-                      setTimeout(() => handleValidate(), 100);
+                      // Validate immediately with the file
+                      handleValidate(exampleFile);
                     }}
                   />
                 </div>
