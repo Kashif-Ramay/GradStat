@@ -99,26 +99,14 @@ function App() {
           const formData = new FormData();
           formData.append('file', uploadedFile);
 
-          // Use fetch instead of axios to avoid any transformations
-          const fetchResponse = await fetch(`${axios.defaults.baseURL}/api/validate`, {
-            method: 'POST',
-            headers: {
-              'X-Testing-Password': testingPassword
-              // Don't set Content-Type - let browser handle it
-            },
-            body: formData
+          const response = await axios.post('/api/validate', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
           });
 
-          if (!fetchResponse.ok) {
-            const errorData = await fetchResponse.json();
-            throw new Error(errorData.error || 'Validation failed');
-          }
-
-          const response = await fetchResponse.json();
-          setPreview(response.preview);
+          setPreview(response.data.preview);
           
-          if (response.issues && response.issues.length > 0) {
-            console.warn('Data quality issues:', response.issues);
+          if (response.data.issues && response.data.issues.length > 0) {
+            console.warn('Data quality issues:', response.data.issues);
           }
         } catch (err: any) {
           setError(err.message || 'Failed to validate file');
@@ -205,26 +193,14 @@ function App() {
       }
       console.log('=== END FRONTEND DEBUG ===');
 
-      // Use fetch instead of axios to avoid any transformations
-      const fetchResponse = await fetch(`${axios.defaults.baseURL}/api/validate`, {
-        method: 'POST',
-        headers: {
-          'X-Testing-Password': testingPassword
-          // Don't set Content-Type - let browser handle it
-        },
-        body: formData
+      const response = await axios.post('/api/validate', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      if (!fetchResponse.ok) {
-        const errorData = await fetchResponse.json();
-        throw new Error(errorData.error || 'Validation failed');
-      }
-
-      const response = await fetchResponse.json();
-      setPreview(response.preview);
+      setPreview(response.data.preview);
       
-      if (response.issues && response.issues.length > 0) {
-        console.warn('Data quality issues:', response.issues);
+      if (response.data.issues && response.data.issues.length > 0) {
+        console.warn('Data quality issues:', response.data.issues);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to validate file');
@@ -279,7 +255,9 @@ function App() {
       formData.append('analysisType', backendAnalysisType);
       formData.append('options', JSON.stringify({ analysisType: backendAnalysisType, ...cleanedOptions }));
 
-      const response = await axios.post('/api/analyze', formData);
+      const response = await axios.post('/api/analyze', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
       setJobId(response.data.job_id);
     } catch (err: any) {
