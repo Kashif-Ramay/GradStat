@@ -99,19 +99,29 @@ function App() {
           const formData = new FormData();
           formData.append('file', uploadedFile);
 
-          const response = await axios.post('/api/validate', formData, {
+          // Use fetch instead of axios to avoid any transformations
+          const fetchResponse = await fetch(`${axios.defaults.baseURL}/api/validate`, {
+            method: 'POST',
             headers: {
-              'Content-Type': undefined  // Let browser set it with boundary
-            }
+              'X-Testing-Password': testingPassword
+              // Don't set Content-Type - let browser handle it
+            },
+            body: formData
           });
 
-          setPreview(response.data.preview);
+          if (!fetchResponse.ok) {
+            const errorData = await fetchResponse.json();
+            throw new Error(errorData.error || 'Validation failed');
+          }
+
+          const response = await fetchResponse.json();
+          setPreview(response.preview);
           
-          if (response.data.issues && response.data.issues.length > 0) {
-            console.warn('Data quality issues:', response.data.issues);
+          if (response.issues && response.issues.length > 0) {
+            console.warn('Data quality issues:', response.issues);
           }
         } catch (err: any) {
-          setError(err.response?.data?.error || 'Failed to validate file');
+          setError(err.message || 'Failed to validate file');
           console.error('Validation error:', err);
         } finally {
           setLoading(false);
@@ -195,19 +205,29 @@ function App() {
       }
       console.log('=== END FRONTEND DEBUG ===');
 
-      const response = await axios.post('/api/validate', formData, {
+      // Use fetch instead of axios to avoid any transformations
+      const fetchResponse = await fetch(`${axios.defaults.baseURL}/api/validate`, {
+        method: 'POST',
         headers: {
-          'Content-Type': undefined  // Let browser set it with boundary
-        }
+          'X-Testing-Password': testingPassword
+          // Don't set Content-Type - let browser handle it
+        },
+        body: formData
       });
 
-      setPreview(response.data.preview);
+      if (!fetchResponse.ok) {
+        const errorData = await fetchResponse.json();
+        throw new Error(errorData.error || 'Validation failed');
+      }
+
+      const response = await fetchResponse.json();
+      setPreview(response.preview);
       
-      if (response.data.issues && response.data.issues.length > 0) {
-        console.warn('Data quality issues:', response.data.issues);
+      if (response.issues && response.issues.length > 0) {
+        console.warn('Data quality issues:', response.issues);
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to validate file');
+      setError(err.message || 'Failed to validate file');
       console.error('Validation error:', err);
     } finally {
       setLoading(false);
