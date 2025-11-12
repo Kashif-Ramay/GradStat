@@ -71,10 +71,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'testing-password', 'x-testing-password'],
   exposedHeaders: ['Content-Type']
 }));
-
-// IMPORTANT: Do NOT add express.json() or express.urlencoded() here
-// They will interfere with multer file uploads
-// Instead, add them manually to specific routes that need JSON parsing
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting - General API
 const limiter = rateLimit({
@@ -348,7 +346,7 @@ app.get('/api/job-status', (req, res) => {
  * POST /api/test-advisor/recommend
  * Get statistical test recommendations
  */
-app.post('/api/test-advisor/recommend', express.json(), async (req, res) => {
+app.post('/api/test-advisor/recommend', async (req, res) => {
   try {
     console.log('Test advisor request:', req.body);
     const response = await axios.post(`${WORKER_URL}/test-advisor/recommend`, req.body, {
@@ -711,7 +709,7 @@ app.use((err, req, res, next) => {
  * POST /api/interpret
  * Get AI interpretation of analysis results
  */
-app.post('/api/interpret', express.json(), async (req, res) => {
+app.post('/api/interpret', async (req, res) => {
   try {
     console.log('AI interpretation request');
     const response = await axios.post(`${WORKER_URL}/interpret`, req.body, {
@@ -734,7 +732,7 @@ app.post('/api/interpret', express.json(), async (req, res) => {
  * POST /api/ask
  * Ask a question about analysis results
  */
-app.post('/api/ask', express.json(), async (req, res) => {
+app.post('/api/ask', async (req, res) => {
   try {
     console.log('AI question:', req.body.question);
     const response = await axios.post(`${WORKER_URL}/ask`, req.body, {
@@ -755,7 +753,7 @@ app.post('/api/ask', express.json(), async (req, res) => {
  * POST /api/what-if
  * Explore what-if scenarios
  */
-app.post('/api/what-if', express.json(), async (req, res) => {
+app.post('/api/what-if', async (req, res) => {
   try {
     console.log('What-if scenario:', req.body.scenario);
     const response = await axios.post(`${WORKER_URL}/what-if`, req.body, {
@@ -776,7 +774,7 @@ app.post('/api/what-if', express.json(), async (req, res) => {
  * POST /api/test-advisor/recommend
  * Get AI test recommendations from research description
  */
-app.post('/api/test-advisor/recommend', express.json(), async (req, res) => {
+app.post('/api/test-advisor/recommend', async (req, res) => {
   try {
     console.log('AI test recommendation request');
     const response = await axios.post(`${WORKER_URL}/test-advisor/recommend`, req.body, {
@@ -797,7 +795,7 @@ app.post('/api/test-advisor/recommend', express.json(), async (req, res) => {
  * POST /api/test-advisor/ask
  * Ask AI a question about statistical tests
  */
-app.post('/api/test-advisor/ask', express.json(), async (req, res) => {
+app.post('/api/test-advisor/ask', async (req, res) => {
   try {
     console.log('AI question:', req.body.question);
     const response = await axios.post(`${WORKER_URL}/test-advisor/ask`, req.body, {
@@ -818,7 +816,7 @@ app.post('/api/test-advisor/ask', express.json(), async (req, res) => {
  * POST /api/test-advisor/explain
  * Get AI explanation of statistical assumption
  */
-app.post('/api/test-advisor/explain', express.json(), async (req, res) => {
+app.post('/api/test-advisor/explain', async (req, res) => {
   try {
     console.log('AI explanation request:', req.body.assumption);
     const response = await axios.post(`${WORKER_URL}/test-advisor/explain`, req.body, {
@@ -839,7 +837,7 @@ app.post('/api/test-advisor/explain', express.json(), async (req, res) => {
  * POST /api/test-advisor/compare
  * Compare two statistical tests with AI
  */
-app.post('/api/test-advisor/compare', express.json(), async (req, res) => {
+app.post('/api/test-advisor/compare', async (req, res) => {
   try {
     console.log('AI test comparison:', req.body.test1, 'vs', req.body.test2);
     const response = await axios.post(`${WORKER_URL}/test-advisor/compare`, req.body, {
@@ -860,7 +858,7 @@ app.post('/api/test-advisor/compare', express.json(), async (req, res) => {
  * POST /api/test-advisor/enhance-detection
  * Enhance auto-detection with AI explanation
  */
-app.post('/api/test-advisor/enhance-detection', express.json(), async (req, res) => {
+app.post('/api/test-advisor/enhance-detection', async (req, res) => {
   try {
     console.log('AI enhancement request');
     const response = await axios.post(`${WORKER_URL}/test-advisor/enhance-detection`, req.body, {
@@ -881,7 +879,7 @@ app.post('/api/test-advisor/enhance-detection', express.json(), async (req, res)
  * POST /api/test-advisor/sample-size
  * Get AI sample size guidance
  */
-app.post('/api/test-advisor/sample-size', express.json(), async (req, res) => {
+app.post('/api/test-advisor/sample-size', async (req, res) => {
   try {
     console.log('AI sample size guidance request');
     const response = await axios.post(`${WORKER_URL}/test-advisor/sample-size`, req.body, {

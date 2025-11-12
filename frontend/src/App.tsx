@@ -147,11 +147,19 @@ function App() {
 
   // Handle file change and clear previous results
   const handleFileChange = (newFile: File | null) => {
+    console.log('=== handleFileChange DEBUG ===');
+    console.log('newFile:', newFile);
+    console.log('newFile type:', typeof newFile);
+    console.log('newFile instanceof File:', newFile instanceof File);
+    console.log('newFile?.name:', newFile?.name);
+    console.log('=== END handleFileChange DEBUG ===');
+    
     setFile(newFile);
     // Clear previous results when new file is selected
     setJobId(null);
     setJobStatus(null);
     setPreview(null);
+    setError(null);
   };
 
   // Validate and preview uploaded file
