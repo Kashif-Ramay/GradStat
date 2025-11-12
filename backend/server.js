@@ -200,16 +200,27 @@ app.get('/ping', (req, res) => {
  */
 app.post('/api/validate', upload.single('file'), async (req, res) => {
   try {
-    // Debug logging
-    console.log('Validate request received');
+    // Comprehensive debug logging
+    console.log('=== VALIDATE REQUEST DEBUG ===');
     console.log('Content-Type:', req.headers['content-type']);
-    console.log('File:', req.file);
-    console.log('Body:', req.body);
+    console.log('Content-Length:', req.headers['content-length']);
+    console.log('All Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('req.file:', req.file);
+    console.log('req.body:', req.body);
+    console.log('req.body type:', typeof req.body);
+    console.log('req.body keys:', Object.keys(req.body));
+    if (req.body.file) {
+      console.log('req.body.file type:', typeof req.body.file);
+      console.log('req.body.file value:', req.body.file);
+    }
+    console.log('=== END DEBUG ===');
     
     if (!req.file) {
-      console.error('No file in request');
+      console.error('❌ NO FILE IN REQUEST');
       return res.status(400).json({ error: 'No file uploaded' });
     }
+    
+    console.log('✅ FILE RECEIVED SUCCESSFULLY');
 
     // Forward to Python worker for validation
     const formData = new FormData();
