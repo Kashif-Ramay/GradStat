@@ -771,10 +771,10 @@ app.post('/api/what-if', async (req, res) => {
 });
 
 /**
- * POST /api/test-advisor/recommend
+ * POST /api/test-advisor/ai-recommend
  * Get AI test recommendations from research description
  */
-app.post('/api/test-advisor/recommend', async (req, res) => {
+app.post('/api/test-advisor/ai-recommend', async (req, res) => {
   try {
     console.log('AI test recommendation request');
     const response = await axios.post(`${WORKER_URL}/test-advisor/recommend`, req.body, {
