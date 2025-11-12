@@ -667,39 +667,51 @@ async def what_if_scenario(request: Request):
 
 @app.post(
     "/test-advisor/recommend",
-    summary="AI Test Recommendation",
-    description="Get AI-powered test recommendations from research description",
-    tags=["Test Advisor AI"]
+    summary="Get Test Recommendations",
+    description="Get test recommendations from wizard answers OR AI description",
+    tags=["Test Advisor"]
 )
-async def ai_recommend_test(request: Request):
+async def recommend_test_unified(request: Request):
     """
-    Get statistical test recommendations based on user's research description
+    Smart endpoint that handles both wizard answers and AI descriptions
     
-    Request body should contain:
-    - description: User's description of their research scenario
-    - data_summary: Optional summary of uploaded data
+    Args:
+        Wizard mode: researchQuestion, nGroups, isNormal, etc.
+        AI mode: description (required), data_summary (optional)
+        
+    Returns:
+        Test recommendations
     """
-    if not TEST_ADVISOR_AI_AVAILABLE or test_advisor_ai is None:
-        return {
-            "error": "Test Advisor AI not available",
-            "message": "Test Advisor AI requires the OpenAI package. Install with: pip install openai>=1.0.0"
-        }
-    
     try:
         data = await request.json()
-        description = data.get('description', '')
-        data_summary = data.get('data_summary')
         
-        if not description:
-            raise HTTPException(status_code=400, detail="Description is required")
-        
-        result = test_advisor_ai.recommend_from_description(description, data_summary)
-        return result
-        
-    except HTTPException:
-        raise
+        # Detect mode: AI if 'description' present, otherwise wizard
+        if 'description' in data and data.get('description'):
+            # AI Mode
+            if test_advisor_ai is None:
+                return {
+                    "ok": False,
+                    "error": "AI features not available",
+                    "message": "Test Advisor AI requires the OpenAI package. Install with: pip install openai>=1.0.0"
+                }
+            
+            description = data.get('description')
+            data_summary = data.get('data_summary')
+            
+            logger.info("AI recommendation mode")
+            result = test_advisor_ai.recommend_from_description(description, data_summary)
+            return result
+        else:
+            # Wizard Mode
+            logger.info(f"Wizard recommendation mode: {data}")
+            recommendations = recommend_test(data)
+            logger.info(f"Generated {len(recommendations)} recommendations")
+            return {"ok": True, "recommendations": recommendations}
+            
     except Exception as e:
-        logger.error(f"AI recommendation error: {str(e)}")
+        logger.error(f"Test recommendation error: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post(

@@ -344,12 +344,12 @@ app.get('/api/job-status', (req, res) => {
 
 /**
  * POST /api/test-advisor/recommend
- * Get statistical test recommendations from wizard answers
+ * Get statistical test recommendations (wizard or AI mode)
  */
 app.post('/api/test-advisor/recommend', async (req, res) => {
   try {
     console.log('Test advisor request:', req.body);
-    const response = await axios.post(`${WORKER_URL}/test-advisor/recommend-wizard`, req.body, {
+    const response = await axios.post(`${WORKER_URL}/test-advisor/recommend`, req.body, {
       headers: {
         'Content-Type': 'application/json',
       },
@@ -765,27 +765,6 @@ app.post('/api/what-if', async (req, res) => {
     console.error('What-if error:', error.message);
     res.status(500).json({ 
       error: 'Failed to analyze scenario',
-      details: error.response?.data || error.message 
-    });
-  }
-});
-
-/**
- * POST /api/test-advisor/ai-recommend
- * Get AI test recommendations from research description
- */
-app.post('/api/test-advisor/ai-recommend', async (req, res) => {
-  try {
-    console.log('AI test recommendation request');
-    const response = await axios.post(`${WORKER_URL}/test-advisor/recommend`, req.body, {
-      headers: { 'Content-Type': 'application/json' },
-      timeout: 30000
-    });
-    res.json(response.data);
-  } catch (error) {
-    console.error('AI recommendation error:', error.message);
-    res.status(500).json({ 
-      error: 'Failed to get AI recommendation',
       details: error.response?.data || error.message 
     });
   }

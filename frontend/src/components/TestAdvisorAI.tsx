@@ -39,7 +39,7 @@ const TestAdvisorAI: React.FC<TestAdvisorAIProps> = ({ dataSummary, currentAnswe
     setError(null);
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/test-advisor/ai-recommend`, {
+      const response = await axios.post(`${API_BASE_URL}/api/test-advisor/recommend`, {
         description,
         data_summary: dataSummary
       });
