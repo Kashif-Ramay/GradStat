@@ -71,8 +71,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'testing-password', 'x-testing-password'],
   exposedHeaders: ['Content-Type']
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Conditional body parsing - only for non-file-upload routes
+// This prevents interference with multer
+app.use((req, res, next) => {
+  // Skip body parsing for file upload endpoints
+  if (req.path.includes('/validate') || 
+      req.path.includes('/analyze') || 
+      req.path.includes('/auto-detect') ||
+      req.path.includes('/auto-answer') ||
+      req.path.includes('/analyze-dataset')) {
+    return next();
+  }
+  // Apply JSON parsing for other routes
+  express.json()(req, res, next);
+});
 
 // Rate limiting - General API
 const limiter = rateLimit({
