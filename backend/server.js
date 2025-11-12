@@ -722,6 +722,132 @@ app.post('/api/what-if', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/test-advisor/recommend
+ * Get AI test recommendations from research description
+ */
+app.post('/api/test-advisor/recommend', async (req, res) => {
+  try {
+    console.log('AI test recommendation request');
+    const response = await axios.post(`${WORKER_URL}/test-advisor/recommend`, req.body, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('AI recommendation error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to get AI recommendation',
+      details: error.response?.data || error.message 
+    });
+  }
+});
+
+/**
+ * POST /api/test-advisor/ask
+ * Ask AI a question about statistical tests
+ */
+app.post('/api/test-advisor/ask', async (req, res) => {
+  try {
+    console.log('AI question:', req.body.question);
+    const response = await axios.post(`${WORKER_URL}/test-advisor/ask`, req.body, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('AI question error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to answer question',
+      details: error.response?.data || error.message 
+    });
+  }
+});
+
+/**
+ * POST /api/test-advisor/explain
+ * Get AI explanation of statistical assumption
+ */
+app.post('/api/test-advisor/explain', async (req, res) => {
+  try {
+    console.log('AI explanation request:', req.body.assumption);
+    const response = await axios.post(`${WORKER_URL}/test-advisor/explain`, req.body, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('AI explanation error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to get explanation',
+      details: error.response?.data || error.message 
+    });
+  }
+});
+
+/**
+ * POST /api/test-advisor/compare
+ * Compare two statistical tests with AI
+ */
+app.post('/api/test-advisor/compare', async (req, res) => {
+  try {
+    console.log('AI test comparison:', req.body.test1, 'vs', req.body.test2);
+    const response = await axios.post(`${WORKER_URL}/test-advisor/compare`, req.body, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('AI comparison error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to compare tests',
+      details: error.response?.data || error.message 
+    });
+  }
+});
+
+/**
+ * POST /api/test-advisor/enhance-detection
+ * Enhance auto-detection with AI explanation
+ */
+app.post('/api/test-advisor/enhance-detection', async (req, res) => {
+  try {
+    console.log('AI enhancement request');
+    const response = await axios.post(`${WORKER_URL}/test-advisor/enhance-detection`, req.body, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('AI enhancement error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to enhance detection',
+      details: error.response?.data || error.message 
+    });
+  }
+});
+
+/**
+ * POST /api/test-advisor/sample-size
+ * Get AI sample size guidance
+ */
+app.post('/api/test-advisor/sample-size', async (req, res) => {
+  try {
+    console.log('AI sample size guidance request');
+    const response = await axios.post(`${WORKER_URL}/test-advisor/sample-size`, req.body, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 30000
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('AI sample size error:', error.message);
+    res.status(500).json({ 
+      error: 'Failed to get sample size guidance',
+      details: error.response?.data || error.message 
+    });
+  }
+});
+
 // 404 handler - MUST be last!
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });

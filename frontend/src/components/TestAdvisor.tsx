@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ConfidenceBadge from './ConfidenceBadge';
 import AnalysisSummary from './AnalysisSummary';
+import TestAdvisorAI from './TestAdvisorAI';
 
 interface TestRecommendation {
   test_name: string;
@@ -125,6 +126,7 @@ const AutoDetectResult: React.FC<AutoDetectResultProps> = ({ result, onDismiss }
 };
 
 const TestAdvisor: React.FC<TestAdvisorProps> = ({ onSelectTest }) => {
+  const [viewMode, setViewMode] = useState<'wizard' | 'ai'>('wizard');
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState<any>({});
   const [recommendations, setRecommendations] = useState<TestRecommendation[]>([]);
@@ -338,12 +340,60 @@ const TestAdvisor: React.FC<TestAdvisorProps> = ({ onSelectTest }) => {
     }
   };
 
+  // Render AI Assistant view
+  if (viewMode === 'ai') {
+    return (
+      <div>
+        {/* Mode Toggle Tabs */}
+        <div className="flex gap-2 mb-4 border-b border-gray-200">
+          <button
+            onClick={() => setViewMode('wizard')}
+            className="px-4 py-2 font-medium text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            🧭 Wizard
+          </button>
+          <button
+            onClick={() => setViewMode('ai')}
+            className="px-4 py-2 font-medium text-blue-600 border-b-2 border-blue-600"
+          >
+            🤖 AI Assistant
+          </button>
+        </div>
+        
+        <TestAdvisorAI
+          dataSummary={preAnalysisResults}
+          currentAnswers={answers}
+          onRecommendation={(rec) => {
+            console.log('AI Recommendation:', rec);
+          }}
+        />
+      </div>
+    );
+  }
+
   // Step 1: Research Question
   if (step === 1) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">🧭 Statistical Test Advisor</h2>
-        <p className="text-gray-600 mb-6">Let us help you find the right test for your research!</p>
+      <div>
+        {/* Mode Toggle Tabs */}
+        <div className="flex gap-2 mb-4 border-b border-gray-200">
+          <button
+            onClick={() => setViewMode('wizard')}
+            className="px-4 py-2 font-medium text-blue-600 border-b-2 border-blue-600"
+          >
+            🧭 Wizard
+          </button>
+          <button
+            onClick={() => setViewMode('ai')}
+            className="px-4 py-2 font-medium text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            🤖 AI Assistant
+          </button>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">🧭 Statistical Test Advisor</h2>
+          <p className="text-gray-600 mb-6">Let us help you find the right test for your research!</p>
 
         {/* File Upload Prompt */}
         {!uploadedFile && (
@@ -468,6 +518,7 @@ const TestAdvisor: React.FC<TestAdvisorProps> = ({ onSelectTest }) => {
             </button>
           ))}
         </div>
+      </div>
       </div>
     );
   }

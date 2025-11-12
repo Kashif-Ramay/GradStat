@@ -42,6 +42,15 @@ except Exception as e:
     StatisticalInterpreter = None
     LLM_AVAILABLE = False
 
+# Try to import Test Advisor AI (optional feature)
+try:
+    from test_advisor_llm import TestAdvisorAI
+    TEST_ADVISOR_AI_AVAILABLE = True
+except Exception as e:
+    logger.warning(f"Test Advisor AI not available: {e}")
+    TestAdvisorAI = None
+    TEST_ADVISOR_AI_AVAILABLE = False
+
 app = FastAPI(
     title="GradStat Analysis API",
     description="""
@@ -541,6 +550,9 @@ def generate_recommendations(df: pd.DataFrame, issues: List[Dict]) -> List[str]:
 # Initialize LLM interpreter (if available)
 llm_interpreter = StatisticalInterpreter() if LLM_AVAILABLE else None
 
+# Initialize Test Advisor AI (if available)
+test_advisor_ai = TestAdvisorAI() if TEST_ADVISOR_AI_AVAILABLE else None
+
 @app.post(
     "/interpret",
     summary="AI Interpretation",
@@ -651,6 +663,223 @@ async def what_if_scenario(request: Request):
         raise
     except Exception as e:
         logger.error(f"What-if analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post(
+    "/test-advisor/recommend",
+    summary="AI Test Recommendation",
+    description="Get AI-powered test recommendations from research description",
+    tags=["Test Advisor AI"]
+)
+async def ai_recommend_test(request: Request):
+    """
+    Get statistical test recommendations based on user's research description
+    
+    Request body should contain:
+    - description: User's description of their research scenario
+    - data_summary: Optional summary of uploaded data
+    """
+    if not TEST_ADVISOR_AI_AVAILABLE or test_advisor_ai is None:
+        return {
+            "error": "Test Advisor AI not available",
+            "message": "Test Advisor AI requires the OpenAI package. Install with: pip install openai>=1.0.0"
+        }
+    
+    try:
+        data = await request.json()
+        description = data.get('description', '')
+        data_summary = data.get('data_summary')
+        
+        if not description:
+            raise HTTPException(status_code=400, detail="Description is required")
+        
+        result = test_advisor_ai.recommend_from_description(description, data_summary)
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"AI recommendation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post(
+    "/test-advisor/ask",
+    summary="Ask AI Question",
+    description="Ask AI a question about statistical tests or concepts",
+    tags=["Test Advisor AI"]
+)
+async def ai_ask_question(request: Request):
+    """
+    Answer user's question about statistical tests or concepts
+    
+    Request body should contain:
+    - question: User's question
+    - context: Optional context (current wizard state, data info)
+    """
+    if not TEST_ADVISOR_AI_AVAILABLE or test_advisor_ai is None:
+        return {"answer": "Test Advisor AI requires the OpenAI package. Install with: pip install openai>=1.0.0"}
+    
+    try:
+        data = await request.json()
+        question = data.get('question', '')
+        context = data.get('context')
+        
+        if not question:
+            raise HTTPException(status_code=400, detail="Question is required")
+        
+        answer = test_advisor_ai.answer_question(question, context)
+        return {"answer": answer}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"AI question error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post(
+    "/test-advisor/explain",
+    summary="Explain Assumption",
+    description="Get plain-language explanation of statistical assumption",
+    tags=["Test Advisor AI"]
+)
+async def ai_explain_assumption(request: Request):
+    """
+    Explain a statistical assumption in plain language
+    
+    Request body should contain:
+    - assumption: Name of the assumption
+    - test_type: Optional test type for context
+    """
+    if not TEST_ADVISOR_AI_AVAILABLE or test_advisor_ai is None:
+        return {"explanation": "Test Advisor AI requires the OpenAI package. Install with: pip install openai>=1.0.0"}
+    
+    try:
+        data = await request.json()
+        assumption = data.get('assumption', '')
+        test_type = data.get('test_type')
+        
+        if not assumption:
+            raise HTTPException(status_code=400, detail="Assumption name is required")
+        
+        explanation = test_advisor_ai.explain_assumption(assumption, test_type)
+        return {"explanation": explanation}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"AI explanation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post(
+    "/test-advisor/compare",
+    summary="Compare Tests",
+    description="Compare two statistical tests with AI guidance",
+    tags=["Test Advisor AI"]
+)
+async def ai_compare_tests(request: Request):
+    """
+    Compare two statistical tests and explain when to use each
+    
+    Request body should contain:
+    - test1: First test name
+    - test2: Second test name
+    - context: Optional context about the data/scenario
+    """
+    if not TEST_ADVISOR_AI_AVAILABLE or test_advisor_ai is None:
+        return {
+            "error": "Test Advisor AI not available",
+            "message": "Test Advisor AI requires the OpenAI package. Install with: pip install openai>=1.0.0"
+        }
+    
+    try:
+        data = await request.json()
+        test1 = data.get('test1', '')
+        test2 = data.get('test2', '')
+        context = data.get('context')
+        
+        if not test1 or not test2:
+            raise HTTPException(status_code=400, detail="Both test names are required")
+        
+        result = test_advisor_ai.compare_tests(test1, test2, context)
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"AI comparison error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post(
+    "/test-advisor/enhance-detection",
+    summary="Enhance Auto-Detection",
+    description="Enhance auto-detection results with AI explanation",
+    tags=["Test Advisor AI"]
+)
+async def ai_enhance_detection(request: Request):
+    """
+    Enhance auto-detection results with AI-generated explanation
+    
+    Request body should contain:
+    - detection_result: Result from auto-detection
+    - question_type: Type of question (isNormal, isPaired, etc.)
+    """
+    if not TEST_ADVISOR_AI_AVAILABLE or test_advisor_ai is None:
+        return {"enhanced_explanation": "Test Advisor AI requires the OpenAI package."}
+    
+    try:
+        data = await request.json()
+        detection_result = data.get('detection_result', {})
+        question_type = data.get('question_type', '')
+        
+        if not detection_result or not question_type:
+            raise HTTPException(status_code=400, detail="Detection result and question type are required")
+        
+        enhanced = test_advisor_ai.enhance_auto_detection(detection_result, question_type)
+        return {"enhanced_explanation": enhanced}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"AI enhancement error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post(
+    "/test-advisor/sample-size",
+    summary="Sample Size Guidance",
+    description="Get AI-powered sample size guidance",
+    tags=["Test Advisor AI"]
+)
+async def ai_sample_size_guidance(request: Request):
+    """
+    Provide sample size guidance for a given test
+    
+    Request body should contain:
+    - test_type: Type of statistical test
+    - current_n: Current sample size
+    - effect_size: Expected effect size (small/medium/large)
+    """
+    if not TEST_ADVISOR_AI_AVAILABLE or test_advisor_ai is None:
+        return {
+            "error": "Test Advisor AI not available",
+            "message": "Test Advisor AI requires the OpenAI package."
+        }
+    
+    try:
+        data = await request.json()
+        test_type = data.get('test_type', '')
+        current_n = data.get('current_n', 0)
+        effect_size = data.get('effect_size', 'medium')
+        
+        if not test_type:
+            raise HTTPException(status_code=400, detail="Test type is required")
+        
+        result = test_advisor_ai.suggest_sample_size(test_type, current_n, effect_size)
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"AI sample size guidance error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Analysis functions continue in next file...
