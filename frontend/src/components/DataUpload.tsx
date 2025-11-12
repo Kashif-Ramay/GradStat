@@ -95,7 +95,7 @@ const DataUpload: React.FC<DataUploadProps> = ({ file, onFileChange, onValidate,
       )}
 
       <button
-        onClick={onValidate}
+        onClick={() => onValidate()}
         disabled={!file || loading}
         className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
       >
