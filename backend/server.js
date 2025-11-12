@@ -109,6 +109,11 @@ const passwordProtection = (req, res, next) => {
     return next();
   }
   
+  // Skip for OPTIONS requests (CORS preflight)
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  
   const providedPassword = req.headers['x-testing-password'];
   
   if (providedPassword !== testingPassword) {
