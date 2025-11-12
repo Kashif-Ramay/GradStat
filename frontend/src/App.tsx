@@ -13,7 +13,7 @@ import FeedbackForm from './components/FeedbackForm';
 import ExampleDatasets from './components/ExampleDatasets';
 import useKeyboardShortcuts from './hooks/useKeyboardShortcuts';
 import { PreviewData, AnalysisOptions, JobStatusData } from './types';
-import { initGA, analytics } from './utils/analytics';
+import { initGA } from './utils/analytics';
 
 // Configure API base URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';

@@ -7,7 +7,6 @@ interface SocialShareProps {
 }
 
 const SocialShare: React.FC<SocialShareProps> = ({ analysisType, resultSummary }) => {
-  const shareUrl = window.location.href;
   const appUrl = 'https://gradstat-frontend.onrender.com';
   
   const defaultText = `I just used GradStat for statistical analysis! 📊 ${analysisType ? `Performed ${analysisType} analysis` : 'Check it out'} - it's free and AI-powered! 🤖`;
