@@ -344,12 +344,12 @@ app.get('/api/job-status', (req, res) => {
 
 /**
  * POST /api/test-advisor/recommend
- * Get statistical test recommendations
+ * Get statistical test recommendations from wizard answers
  */
 app.post('/api/test-advisor/recommend', async (req, res) => {
   try {
     console.log('Test advisor request:', req.body);
-    const response = await axios.post(`${WORKER_URL}/test-advisor/recommend`, req.body, {
+    const response = await axios.post(`${WORKER_URL}/test-advisor/recommend-wizard`, req.body, {
       headers: {
         'Content-Type': 'application/json',
       },
