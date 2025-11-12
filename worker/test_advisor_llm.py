@@ -117,11 +117,11 @@ Focus on the most common and appropriate tests for their scenario.
             # Build context string
             context_str = ""
             if context:
-                if 'current_answers' in context:
+                if 'current_answers' in context and context['current_answers'] is not None:
                     context_str += f"\n\nCurrent Test Selection Context:\n"
                     for key, value in context['current_answers'].items():
                         context_str += f"- {key}: {value}\n"
-                if 'data_summary' in context:
+                if 'data_summary' in context and context['data_summary'] is not None:
                     context_str += f"\nData: {context['data_summary'].get('n_rows', 'Unknown')} rows, {context['data_summary'].get('n_columns', 'Unknown')} columns\n"
             
             prompt = f"""You are an expert statistical consultant. Answer the following question clearly and concisely.
@@ -211,7 +211,7 @@ Keep it concise (3-4 sentences) and practical for researchers."""
         
         try:
             context_str = ""
-            if context and 'data_summary' in context:
+            if context and 'data_summary' in context and context['data_summary'] is not None:
                 context_str = f"\n\nUser's Data Context:\n"
                 context_str += f"- Sample size: {context['data_summary'].get('n_rows', 'Unknown')}\n"
             

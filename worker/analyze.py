@@ -168,14 +168,14 @@ async def clear_analysis_cache():
     return {"status": "ok", "message": "Cache cleared successfully"}
 
 @app.post(
-    "/test-advisor/recommend",
-    summary="Get Test Recommendations",
-    description="Get statistical test recommendations based on research question and data characteristics",
+    "/test-advisor/recommend-wizard",
+    summary="Get Test Recommendations (Wizard)",
+    description="Get statistical test recommendations based on wizard answers (legacy endpoint)",
     tags=["Test Advisor"]
 )
 async def get_test_recommendations(request: Request):
     """
-    Recommend statistical tests based on user answers
+    Recommend statistical tests based on wizard answers (legacy endpoint)
     
     Args:
         request: User responses to wizard questions
