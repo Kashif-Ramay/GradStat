@@ -31,7 +31,7 @@ const TestAdvisorAI: React.FC<TestAdvisorAIProps> = ({ dataSummary, currentAnswe
 
   const handleGetRecommendation = async () => {
     if (!description.trim()) {
-      setError('Please describe your research scenario');
+      alert('Description is required\n\nPlease describe your research scenario to get AI recommendations.');
       return;
     }
 
