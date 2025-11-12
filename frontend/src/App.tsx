@@ -28,7 +28,19 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 function App() {
   const [showHomePage, setShowHomePage] = useState<boolean>(true);
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFileInternal] = useState<File | null>(null);
+  
+  // Wrapper to track all setFile calls
+  const setFile = (newFile: File | null | any) => {
+    console.log('🔴 setFile CALLED:', {
+      value: newFile,
+      type: typeof newFile,
+      isFile: newFile instanceof File,
+      isEvent: newFile?.type === 'click' || newFile?.type === 'change',
+      stack: new Error().stack
+    });
+    setFileInternal(newFile);
+  };
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [analysisType, setAnalysisType] = useState<string>('descriptive');
   const [options, setOptions] = useState<AnalysisOptions>({});
