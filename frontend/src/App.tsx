@@ -59,6 +59,10 @@ function App() {
   // Refs for keyboard shortcuts
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Navigation history for back button
+  const [navigationHistory, setNavigationHistory] = useState<string[]>(['home']);
+  const [currentView, setCurrentView] = useState<string>('home');
+
   // Initialize Google Analytics
   useEffect(() => {
     initGA();
@@ -83,6 +87,74 @@ function App() {
     setShowTestAdvisor(false);
     setAnalysisType('descriptive');
   };
+
+  // Navigation helpers
+  const navigateTo = (view: string) => {
+    setNavigationHistory(prev => [...prev, view]);
+    setCurrentView(view);
+  };
+
+  const navigateBack = () => {
+    if (navigationHistory.length > 1) {
+      const newHistory = [...navigationHistory];
+      newHistory.pop(); // Remove current
+      const previousView = newHistory[newHistory.length - 1];
+      setNavigationHistory(newHistory);
+      setCurrentView(previousView);
+
+      // Apply the view change
+      if (previousView === 'home') {
+        setShowHomePage(true);
+        setFile(null);
+        setPreview(null);
+        setShowTestAdvisor(false);
+        setShowPowerAnalysis(false);
+        setJobId(null);
+        setJobStatus(null);
+      } else if (previousView === 'test-advisor') {
+        setShowTestAdvisor(true);
+        setShowPowerAnalysis(false);
+        setShowHomePage(false);
+      } else if (previousView === 'power-analysis') {
+        setShowPowerAnalysis(true);
+        setShowTestAdvisor(false);
+        setShowHomePage(false);
+      } else if (previousView === 'data-analysis') {
+        setShowPowerAnalysis(false);
+        setShowTestAdvisor(false);
+        setShowHomePage(false);
+      }
+    }
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // ESC to go back
+      if (e.key === 'Escape') {
+        if (!showHomePage) {
+          e.preventDefault();
+          navigateBack();
+        }
+      }
+      // Alt+H to go home
+      if (e.altKey && e.key === 'h') {
+        e.preventDefault();
+        setShowHomePage(true);
+        setFile(null);
+        setPreview(null);
+        setShowTestAdvisor(false);
+        setShowPowerAnalysis(false);
+        setJobId(null);
+        setJobStatus(null);
+        setNavigationHistory(['home']);
+        setCurrentView('home');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showHomePage, navigationHistory]);
 
   // Handle test selection from Test Advisor
   const handleSelectTest = async (testInfo: any, uploadedFile: File | null, skipValidation: boolean = false) => {
@@ -425,6 +497,21 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
+              {/* Back Button (only show if not on home) */}
+              {!showHomePage && navigationHistory.length > 1 && (
+                <button
+                  onClick={navigateBack}
+                  className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100"
+                  title="Go Back (ESC)"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span className="text-sm font-medium">Back</span>
+                </button>
+              )}
+              
+              {/* Home Button */}
               <button
                 onClick={() => {
                   setShowHomePage(true);
@@ -434,14 +521,17 @@ function App() {
                   setShowPowerAnalysis(false);
                   setJobId(null);
                   setJobStatus(null);
+                  setNavigationHistory(['home']);
+                  setCurrentView('home');
                 }}
                 className="text-gray-600 hover:text-gray-900 transition-colors"
-                title="Go to Home"
+                title="Go to Home (Alt+H)"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
               </button>
+              
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
                   GradStat
@@ -452,10 +542,29 @@ function App() {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              {/* Breadcrumb */}
+              <div className="text-sm text-gray-500 flex items-center gap-2">
+                <span>Home</span>
+                {currentView !== 'home' && (
+                  <>
+                    <span>›</span>
+                    <span className="text-gray-900 font-medium">
+                      {currentView === 'test-advisor' && 'Test Advisor'}
+                      {currentView === 'power-analysis' && 'Power Analysis'}
+                      {currentView === 'data-analysis' && 'Data Analysis'}
+                    </span>
+                  </>
+                )}
+              </div>
+              
+              <div className="h-6 w-px bg-gray-300"></div>
+              
               <button 
                 onClick={() => {
+                  navigateTo('test-advisor');
                   setShowTestAdvisor(true);
                   setShowPowerAnalysis(false);
+                  setShowHomePage(false);
                   setFile(null);
                   setPreview(null);
                   setJobId(null);
@@ -467,8 +576,10 @@ function App() {
               </button>
               <button 
                 onClick={() => {
+                  navigateTo('power-analysis');
                   setShowPowerAnalysis(true);
                   setShowTestAdvisor(false);
+                  setShowHomePage(false);
                   setAnalysisType('power');
                   setFile(null);
                   setPreview(null);
@@ -491,8 +602,10 @@ function App() {
               </button>
               <button 
                 onClick={() => {
+                  navigateTo('data-analysis');
                   setShowPowerAnalysis(false);
                   setShowTestAdvisor(false);
+                  setShowHomePage(false);
                   setAnalysisType('descriptive');
                   setJobId(null);
                   setJobStatus(null);
@@ -709,15 +822,29 @@ function App() {
       <footer className="mt-16 bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">
-              GradStat v1.0.0 — Built for graduate researchers
-            </p>
+            <div className="flex items-center gap-6">
+              <p className="text-sm text-gray-500">
+                GradStat v1.0.0 — Built for graduate researchers
+              </p>
+              <div className="text-xs text-gray-400 flex items-center gap-4">
+                <span className="flex items-center gap-1">
+                  <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">ESC</kbd>
+                  Back
+                </span>
+                <span className="flex items-center gap-1">
+                  <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">Alt</kbd>
+                  +
+                  <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs">H</kbd>
+                  Home
+                </span>
+              </div>
+            </div>
             <button
               onClick={() => setShowShortcutsHelp(true)}
               className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
               title="Keyboard Shortcuts (Ctrl+?)"
             >
-              ⌨️ Shortcuts
+              ⌨️ All Shortcuts
             </button>
           </div>
         </div>
