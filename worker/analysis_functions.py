@@ -151,11 +151,19 @@ def group_comparison_analysis(df: pd.DataFrame, opts: Dict) -> Dict:
         
         # Look for ID columns
         id_cols = [col for col in df.columns if 'id' in col.lower() or 'subject' in col.lower() or 'patient' in col.lower()]
+        print(f"DEBUG: All columns: {df.columns.tolist()}")
+        print(f"DEBUG: Found ID columns: {id_cols}")
+        
         if id_cols:
             id_col = id_cols[0]
             # Check if we have duplicate IDs (indicating repeated measures)
-            if df[id_col].duplicated().any():
+            has_duplicates = df[id_col].duplicated().any()
+            print(f"DEBUG: ID column '{id_col}' has duplicates: {has_duplicates}")
+            print(f"DEBUG: Unique IDs: {df[id_col].nunique()}, Total rows: {len(df)}")
+            
+            if has_duplicates:
                 is_paired = True
+                print(f"DEBUG: PAIRED DATA DETECTED!")
         
         if is_paired and id_col:
             # PAIRED T-TEST
@@ -209,6 +217,7 @@ def group_comparison_analysis(df: pd.DataFrame, opts: Dict) -> Dict:
                         "n_pairs": len(differences),
                         "significant": p_value < alpha
                     }
+                    print(f"DEBUG: Successfully performed PAIRED t-test with {len(differences)} pairs")
                 else:
                     raise ValueError("Paired data must have exactly 2 groups")
             except Exception as e:
@@ -275,6 +284,7 @@ def group_comparison_analysis(df: pd.DataFrame, opts: Dict) -> Dict:
                 "cohens_d": float(cohens_d),
                 "significant": p_value < alpha
             }
+            print(f"DEBUG: Performed INDEPENDENT t-test (is_paired={is_paired})")
         
     else:
         # One-way ANOVA
