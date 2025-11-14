@@ -125,8 +125,32 @@ def group_comparison_analysis(df: pd.DataFrame, opts: Dict) -> Dict:
     if not group_var or not dep_var:
         raise ValueError("Group variable and dependent variable required")
     
-    # Clean data
-    data = df[[group_var, dep_var]].dropna()
+    # Check if data is paired FIRST (before cleaning)
+    is_paired = False
+    id_col = None
+    
+    # Look for ID columns
+    id_cols = [col for col in df.columns if 'id' in col.lower() or 'subject' in col.lower() or 'patient' in col.lower()]
+    print(f"DEBUG: All columns: {df.columns.tolist()}")
+    print(f"DEBUG: Found ID columns: {id_cols}")
+    
+    if id_cols:
+        id_col = id_cols[0]
+        # Check if we have duplicate IDs (indicating repeated measures)
+        has_duplicates = df[id_col].duplicated().any()
+        print(f"DEBUG: ID column '{id_col}' has duplicates: {has_duplicates}")
+        print(f"DEBUG: Unique IDs: {df[id_col].nunique()}, Total rows: {len(df)}")
+        
+        if has_duplicates:
+            is_paired = True
+            print(f"DEBUG: PAIRED DATA DETECTED!")
+    
+    # Clean data - include ID column if paired
+    if is_paired and id_col:
+        data = df[[id_col, group_var, dep_var]].dropna()
+    else:
+        data = df[[group_var, dep_var]].dropna()
+    
     groups = data[group_var].unique()
     n_groups = len(groups)
     
@@ -145,25 +169,6 @@ def group_comparison_analysis(df: pd.DataFrame, opts: Dict) -> Dict:
     
     # Perform appropriate test
     if n_groups == 2:
-        # Check if data is paired (duplicate IDs or explicit paired structure)
-        is_paired = False
-        id_col = None
-        
-        # Look for ID columns
-        id_cols = [col for col in df.columns if 'id' in col.lower() or 'subject' in col.lower() or 'patient' in col.lower()]
-        print(f"DEBUG: All columns: {df.columns.tolist()}")
-        print(f"DEBUG: Found ID columns: {id_cols}")
-        
-        if id_cols:
-            id_col = id_cols[0]
-            # Check if we have duplicate IDs (indicating repeated measures)
-            has_duplicates = df[id_col].duplicated().any()
-            print(f"DEBUG: ID column '{id_col}' has duplicates: {has_duplicates}")
-            print(f"DEBUG: Unique IDs: {df[id_col].nunique()}, Total rows: {len(df)}")
-            
-            if has_duplicates:
-                is_paired = True
-                print(f"DEBUG: PAIRED DATA DETECTED!")
         
         if is_paired and id_col:
             # PAIRED T-TEST
