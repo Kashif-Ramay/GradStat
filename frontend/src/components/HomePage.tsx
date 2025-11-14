@@ -203,6 +203,49 @@ const HomePage: React.FC<HomePageProps> = ({ onGetStarted, onTestAdvisor }) => {
         </div>
       </div>
 
+      {/* Demo Video Section */}
+      <div className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              See GradStat in Action
+            </h2>
+            <p className="text-xl text-gray-600">
+              Watch a 2-minute demo of how easy statistical analysis can be
+            </p>
+          </div>
+          
+          {/* Video Container */}
+          <div className="max-w-4xl mx-auto">
+            <div className="relative rounded-xl overflow-hidden shadow-2xl" 
+                 style={{ paddingBottom: '56.25%', height: 0 }}>
+              <iframe
+                src="https://www.loom.com/embed/34df8253a94242669087929c449df252"
+                frameBorder="0"
+                allowFullScreen
+                className="absolute top-0 left-0 w-full h-full"
+              />
+            </div>
+          </div>
+          
+          {/* Video Stats */}
+          <div className="mt-12 grid grid-cols-3 gap-8 max-w-2xl mx-auto text-center">
+            <div>
+              <div className="text-3xl font-bold text-blue-600">2 min</div>
+              <div className="text-gray-600">Quick Tutorial</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-blue-600">5 steps</div>
+              <div className="text-gray-600">From Upload to Results</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-blue-600">100%</div>
+              <div className="text-gray-600">Easy to Follow</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Stats Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
