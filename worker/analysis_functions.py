@@ -145,64 +145,136 @@ def group_comparison_analysis(df: pd.DataFrame, opts: Dict) -> Dict:
     
     # Perform appropriate test
     if n_groups == 2:
-        # Two-sample t-test
-        group_data = [data[data[group_var] == g][dep_var].values for g in groups]
+        # Check if data is paired (duplicate IDs or explicit paired structure)
+        is_paired = False
+        id_col = None
         
-        # Check normality (with practical considerations)
-        norm_tests = [stats.shapiro(g) for g in group_data if len(g) >= 3]
-        min_p = min([p for _, p in norm_tests]) if norm_tests else 1.0
+        # Look for ID columns
+        id_cols = [col for col in df.columns if 'id' in col.lower() or 'subject' in col.lower() or 'patient' in col.lower()]
+        if id_cols:
+            id_col = id_cols[0]
+            # Check if we have duplicate IDs (indicating repeated measures)
+            if df[id_col].duplicated().any():
+                is_paired = True
         
-        # For moderate to large samples, use more lenient criteria
-        total_n = sum(len(g) for g in group_data)
+        if is_paired and id_col:
+            # PAIRED T-TEST
+            # Reshape data to wide format for paired test
+            try:
+                # Get unique IDs and ensure we have exactly 2 measurements per ID
+                pivot_data = data.pivot(index=id_col, columns=group_var, values=dep_var)
+                
+                if len(pivot_data.columns) == 2:
+                    group1_data = pivot_data.iloc[:, 0].dropna().values
+                    group2_data = pivot_data.iloc[:, 1].dropna().values
+                    
+                    # Ensure same length (paired)
+                    min_len = min(len(group1_data), len(group2_data))
+                    group1_data = group1_data[:min_len]
+                    group2_data = group2_data[:min_len]
+                    
+                    # Check normality of differences
+                    differences = group1_data - group2_data
+                    if len(differences) >= 3:
+                        norm_stat, norm_p = stats.shapiro(differences)
+                        normality_ok = norm_p > 0.01 or len(differences) > 30
+                    else:
+                        norm_p = 1.0
+                        normality_ok = True
+                    
+                    assumptions.append({
+                        "name": "Normality of Differences (Shapiro-Wilk)",
+                        "passed": normality_ok,
+                        "pValue": float(norm_p),
+                        "message": "Differences are approximately normal" if normality_ok else "Consider Wilcoxon signed-rank test"
+                    })
+                    
+                    # Perform paired t-test
+                    t_stat, p_value = stats.ttest_rel(group1_data, group2_data)
+                    
+                    # Effect size (Cohen's d for paired data)
+                    mean_diff = np.mean(differences)
+                    std_diff = np.std(differences, ddof=1)
+                    cohens_d = mean_diff / std_diff if std_diff > 0 else 0
+                    
+                    test_results = {
+                        "test": "Paired t-test",
+                        "t_statistic": float(t_stat),
+                        "p_value": float(p_value),
+                        "df": len(differences) - 1,
+                        "mean_difference": float(mean_diff),
+                        "mean_group_1": float(np.mean(group1_data)),
+                        "mean_group_2": float(np.mean(group2_data)),
+                        "cohens_d": float(cohens_d),
+                        "n_pairs": len(differences),
+                        "significant": p_value < alpha
+                    }
+                else:
+                    raise ValueError("Paired data must have exactly 2 groups")
+            except Exception as e:
+                # Fall back to independent t-test if pairing fails
+                is_paired = False
+                print(f"Warning: Could not perform paired t-test ({str(e)}), using independent t-test")
         
-        # Normality is acceptable if:
-        # 1. p > 0.01 (lenient threshold), OR
-        # 2. Sample size > 30 per group (CLT applies)
-        normality_ok = (min_p > 0.01) or (all(len(g) > 30 for g in group_data))
-        
-        if normality_ok:
-            message = "Data are approximately normal (or sample size sufficient for t-test robustness)"
-        elif min_p > 0.001:
-            message = "Minor deviation from normality. T-test is robust with this sample size"
-        else:
-            message = "Consider Mann-Whitney U test as non-parametric alternative"
-        
-        assumptions.append({
-            "name": "Normality (Shapiro-Wilk)",
-            "passed": normality_ok,
-            "pValue": min_p,
-            "message": message
-        })
-        
-        # Levene's test for equal variances
-        levene_stat, levene_p = stats.levene(*group_data)
-        var_equal = levene_p > alpha
-        
-        assumptions.append({
-            "name": "Equal Variances (Levene)",
-            "passed": var_equal,
-            "pValue": levene_p,
-            "message": "Variances are equal" if var_equal else "Variances are unequal"
-        })
-        
-        # Perform t-test
-        t_stat, p_value = stats.ttest_ind(*group_data, equal_var=var_equal)
-        
-        # Effect size (Cohen's d)
-        mean_diff = np.mean(group_data[0]) - np.mean(group_data[1])
-        pooled_std = np.sqrt((np.var(group_data[0]) + np.var(group_data[1])) / 2)
-        cohens_d = mean_diff / pooled_std if pooled_std > 0 else 0
-        
-        test_results = {
-            "test": "Independent t-test",
-            "t_statistic": float(t_stat),
-            "p_value": float(p_value),
-            "df": len(data) - 2,
-            "mean_group_1": float(np.mean(group_data[0])),
-            "mean_group_2": float(np.mean(group_data[1])),
-            "cohens_d": float(cohens_d),
-            "significant": p_value < alpha
-        }
+        if not is_paired:
+            # INDEPENDENT T-TEST
+            group_data = [data[data[group_var] == g][dep_var].values for g in groups]
+            
+            # Check normality (with practical considerations)
+            norm_tests = [stats.shapiro(g) for g in group_data if len(g) >= 3]
+            min_p = min([p for _, p in norm_tests]) if norm_tests else 1.0
+            
+            # For moderate to large samples, use more lenient criteria
+            total_n = sum(len(g) for g in group_data)
+            
+            # Normality is acceptable if:
+            # 1. p > 0.01 (lenient threshold), OR
+            # 2. Sample size > 30 per group (CLT applies)
+            normality_ok = (min_p > 0.01) or (all(len(g) > 30 for g in group_data))
+            
+            if normality_ok:
+                message = "Data are approximately normal (or sample size sufficient for t-test robustness)"
+            elif min_p > 0.001:
+                message = "Minor deviation from normality. T-test is robust with this sample size"
+            else:
+                message = "Consider Mann-Whitney U test as non-parametric alternative"
+            
+            assumptions.append({
+                "name": "Normality (Shapiro-Wilk)",
+                "passed": normality_ok,
+                "pValue": min_p,
+                "message": message
+            })
+            
+            # Levene's test for equal variances
+            levene_stat, levene_p = stats.levene(*group_data)
+            var_equal = levene_p > alpha
+            
+            assumptions.append({
+                "name": "Equal Variances (Levene)",
+                "passed": var_equal,
+                "pValue": levene_p,
+                "message": "Variances are equal" if var_equal else "Variances are unequal"
+            })
+            
+            # Perform t-test
+            t_stat, p_value = stats.ttest_ind(*group_data, equal_var=var_equal)
+            
+            # Effect size (Cohen's d)
+            mean_diff = np.mean(group_data[0]) - np.mean(group_data[1])
+            pooled_std = np.sqrt((np.var(group_data[0]) + np.var(group_data[1])) / 2)
+            cohens_d = mean_diff / pooled_std if pooled_std > 0 else 0
+            
+            test_results = {
+                "test": "Independent t-test",
+                "t_statistic": float(t_stat),
+                "p_value": float(p_value),
+                "df": len(data) - 2,
+                "mean_group_1": float(np.mean(group_data[0])),
+                "mean_group_2": float(np.mean(group_data[1])),
+                "cohens_d": float(cohens_d),
+                "significant": p_value < alpha
+            }
         
     else:
         # One-way ANOVA
